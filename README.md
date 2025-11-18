@@ -30,11 +30,79 @@ O S.O.S Pets é uma plataforma digital que oferece:
 
 ## 📋 Pré-requisitos
 
+**Opção 1: Com Docker (Recomendado)**
+- Docker Desktop 20.10+
+- Docker Compose 2.0+
+- Navegador web moderno
+
+**Opção 2: Instalação Manual**
 - Python 3.13+
 - MySQL Server 8.0+
 - Navegador web moderno
 
 ## ⚙️ Instalação
+
+### 🐳 Opção 1: Docker (Recomendado - Mais Rápido)
+
+Ideal para desenvolvimento. Tudo configurado automaticamente.
+
+#### 1. Clone o repositório
+```bash
+git clone https://github.com/Daniel130803/TCC-SOS-PETS-Novo.git
+cd TCC-SOS-PETS-Novo
+```
+
+#### 2. Configure variáveis de ambiente
+```bash
+# Copie o arquivo de exemplo
+cp .env.example .env
+
+# Edite se necessário (valores padrão já funcionam)
+```
+
+#### 3. Suba os containers
+```bash
+docker-compose up -d
+```
+
+Isso irá:
+- Criar container MySQL com banco configurado
+- Criar container Redis para cache
+- Criar container do backend Django
+- Rodar migrações automaticamente
+- Subir o servidor em http://localhost:8000
+
+#### 4. Acesse a aplicação
+- Frontend: http://localhost:8000
+- API Docs (Swagger): http://localhost:8000/api/docs/
+- Admin: http://localhost:8000/admin/
+
+#### 5. (Opcional) Criar superusuário
+```bash
+docker-compose exec web python manage.py createsuperuser
+```
+
+#### Comandos úteis Docker
+```bash
+# Ver logs
+docker-compose logs -f web
+
+# Parar containers
+docker-compose down
+
+# Reconstruir após mudanças no código
+docker-compose up -d --build
+
+# Rodar comandos Django
+docker-compose exec web python manage.py <comando>
+
+# Acessar shell do container
+docker-compose exec web bash
+```
+
+---
+
+### 💻 Opção 2: Instalação Manual (Sem Docker)
 
 ### 1. Clone o repositório
 ```bash
@@ -341,21 +409,150 @@ python manage.py test
 python manage.py test core.tests
 ```
 
+## 🤖 CI/CD (Integração Contínua)
+
+O projeto usa **GitHub Actions** para automação de qualidade e deploy.
+
+### Pipeline CI
+A cada push ou pull request, automaticamente:
+1. ✅ **Lint & Format**: Verifica formatação com black, isort e ruff
+2. 🧪 **Testes**: Roda suite de testes com MySQL
+3. 🐳 **Docker Build**: Valida que a imagem Docker compila
+
+### Ver status do CI
+- Badge no topo do README (quando configurado)
+- Aba "Actions" no GitHub
+- Status de checks em Pull Requests
+
+### Rodar localmente o que o CI roda
+```bash
+# Lint e formatação
+cd backend/backend
+pip install black isort ruff
+black --check .
+isort --check-only .
+ruff check .
+
+# Testes
+python manage.py test
+
+# Build Docker
+docker-compose build
+```
+
+## 📊 Monitoramento e Logs
+
+### Logging Estruturado (JSON)
+Logs em formato JSON para análise e alertas:
+```json
+{
+  "timestamp": "2025-11-18T19:00:00Z",
+  "level": "ERROR",
+  "message": "Failed to create adoption",
+  "pathname": "/app/core/views.py",
+  "lineno": 42
+}
+```
+
+### Sentry (Monitoramento de Erros)
+Configure Sentry para capturar erros em produção:
+1. Crie conta em https://sentry.io (grátis até 5k eventos/mês)
+2. Crie novo projeto Django
+3. Adicione DSN no `.env`:
+```env
+SENTRY_DSN=https://xxxxx@xxxxx.ingest.sentry.io/xxxxx
+SENTRY_TRACES_SAMPLE_RATE=0.1
+```
+
+Erros em produção serão automaticamente reportados com:
+- Stack trace completo
+- Contexto da requisição
+- Dados do usuário (se configurado)
+- Alertas por email/Slack
+
 ## 🚀 Deploy
 
-### Preparação para Produção
-1. Altere `DEBUG=False` no `.env`
-2. Configure `ALLOWED_HOSTS` em `settings.py`
-3. Use servidor WSGI (Gunicorn, uWSGI)
-4. Configure servidor web (Nginx, Apache)
-5. Use banco de dados gerenciado
-6. Configure backup automático
-7. Implemente monitoring (Sentry, etc.)
+### Deploy com Docker (Recomendado)
+
+#### 1. Configure variáveis de produção
+Crie `.env` com valores de produção:
+```env
+DJANGO_ENV=prod
+SECRET_KEY=<chave-super-secreta-aqui>
+DEBUG=False
+ALLOWED_HOSTS=seudominio.com,www.seudominio.com
+
+DB_ENGINE=mysql
+DB_NAME=sos_pets_prod
+DB_USER=prod_user
+DB_PASSWORD=<senha-forte>
+DB_HOST=db  # ou IP do banco gerenciado
+
+CORS_ALLOW_ALL_ORIGINS=False
+CORS_ALLOWED_ORIGINS=https://seudominio.com
+
+SENTRY_DSN=https://xxxxx@xxxxx.ingest.sentry.io/xxxxx
+```
+
+#### 2. Build e deploy
+```bash
+# Build da imagem de produção
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml build
+
+# Suba os containers
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+# Verifique logs
+docker-compose logs -f web
+```
+
+#### 3. Nginx reverso (opcional mas recomendado)
+Configure Nginx como proxy reverso:
+```nginx
+server {
+    listen 80;
+    server_name seudominio.com;
+
+    location / {
+        proxy_pass http://localhost:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /static/ {
+        alias /var/www/staticfiles/;
+    }
+
+    location /media/ {
+        alias /var/www/media/;
+    }
+}
+```
+
+### Deploy Manual (Sem Docker)
+
+#### Preparação para Produção
+1. Altere `DJANGO_ENV=prod` no `.env`
+2. Configure `SECRET_KEY` forte e única
+3. `DEBUG=False`
+4. Configure `ALLOWED_HOSTS` correto
+5. Use servidor WSGI: Gunicorn
+```bash
+gunicorn --bind 0.0.0.0:8000 --workers 3 backend.wsgi:application
+```
+6. Configure servidor web (Nginx/Apache) como proxy
+7. Use banco gerenciado (AWS RDS, Azure Database)
+8. Configure backup automático
+9. Implemente monitoring (Sentry configurado)
 
 ### Collectstatic
 ```bash
-python manage.py collectstatic
+python manage.py collectstatic --noinput
 ```
+
+### Healthcheck
+Endpoint para verificar saúde da aplicação:
+- `/api/schema/` - Se retornar 200, aplicação está saudável
 
 ## 📝 Licença
 

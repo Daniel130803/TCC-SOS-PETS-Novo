@@ -7,3 +7,4 @@ media/
 .vscode/
 .idea/
 *.log
+logs/
