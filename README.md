@@ -38,8 +38,8 @@ O S.O.S Pets é uma plataforma digital que oferece:
 
 ### 1. Clone o repositório
 ```bash
-git clone https://github.com/Daniel130803/TCC-SOS-PETS.git
-cd TCC-SOS-PETS
+git clone https://github.com/Daniel130803/TCC-SOS-PETS-Novo.git
+cd TCC-SOS-PETS-Novo
 ```
 
 ### 2. Configure o ambiente virtual (Backend)
@@ -58,7 +58,7 @@ pip install -r requirements.txt
 ```
 
 ### 4. Configure as variáveis de ambiente
-Crie um arquivo `.env` na pasta `backend/backend/` com:
+Crie um arquivo `.env` na pasta `backend/backend/` (ou copie de `.env.example`) com:
 ```env
 SECRET_KEY=sua-chave-secreta-aqui
 DEBUG=True
@@ -94,6 +94,12 @@ python manage.py runserver
 Acesse: `http://localhost:8000`
 
 ## 🔐 Sistema de Autenticação
+### Documentação da API (OpenAPI)
+
+- Esquema: `/api/schema/`
+- Swagger UI: `/api/docs/`
+- Redoc: `/api/redoc/`
+
 
 ### Fluxo de Autenticação JWT
 
@@ -236,7 +242,11 @@ TCC-SOS-PETS/
 │       ├── requirements.txt
 │       ├── .env (criar)
 │       ├── backend/
-│       │   ├── settings.py
+│       │   ├── settings/
+│       │   │   ├── __init__.py  # seleciona dev/prod via DJANGO_ENV
+│       │   │   ├── base.py
+│       │   │   ├── dev.py
+│       │   │   └── prod.py
 │       │   ├── urls.py
 │       │   └── wsgi.py
 │       └── core/

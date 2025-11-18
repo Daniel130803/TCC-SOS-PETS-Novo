@@ -21,10 +21,19 @@ from django.views.generic import TemplateView
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.conf.urls.static import static
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('core.urls')),
+    # Documentação da API (OpenAPI/Swagger/Redoc)
+    path('api/schema/', SpectacularAPIView.as_view(), name='api-schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='api-schema'), name='api-docs'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='api-schema'), name='api-redoc'),
     path('', TemplateView.as_view(template_name='index.html'), name='index'),
     path('login/', csrf_exempt(TemplateView.as_view(template_name='login.html')), name='login'),
     path('registro/', TemplateView.as_view(template_name='registro.html'), name='registro'),
