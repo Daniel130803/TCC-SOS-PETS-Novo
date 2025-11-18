@@ -1,0 +1,9 @@
+﻿venv-backend/
+__pycache__/
+*.py[cod]
+.env
+media/
+.DS_Store
+.vscode/
+.idea/
+*.log

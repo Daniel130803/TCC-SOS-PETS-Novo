@@ -1,0 +1,158 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Início - SOS Pets</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    </head>
+<body>
+
+    <header>
+    <a href="/" class="header-logo-link">
+        <i class="fas fa-paw"></i>
+        <span class="logo-text">S.O.S Pets</span>
+    </a>
+
+    <nav>
+        <a href="/adocao/"><i class="fas fa-heart"></i><span>Adoção</span></a>
+        <a href="/arrecadacao/"><i class="fas fa-hand-holding-heart"></i><span>Arrecadação</span></a>
+        <a href="/denuncia/"><i class="fas fa-bullhorn"></i><span>Denúncia</span></a>
+        <a href="/animais-perdidos/"><i class="fas fa-search"></i><span>Pets Perdidos</span></a>
+        <a href="/contato/"><i class="fas fa-envelope"></i><span>Contato</span></a>
+        <div class="nav-user-area"></div>
+    </nav>
+</header>
+
+    <main>
+        <div class="page-title">
+            <h2>Ajude a nossa causa!</h2>
+            <p>Sua doação transforma a vida dos nossos animais resgatados.</p>
+        </div>
+
+        <div class="donation-container">
+            <form class="donation-form">
+                <h3>Doação Financeira</h3>
+                
+                <div class="form-group">
+                    <label for="nome">Nome Completo</label>
+                    <input type="text" id="nome" name="nome" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cpf_cnpj">CPF / CNPJ</label>
+                    <input type="text" id="cpf_cnpj" name="cpf_cnpj" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="nome">E-mail</label>
+                    <input type="text" id="e-mail" name="e-mail" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cidade">Cidade</label>
+                    <input type="text" id="cidade" name="cidade" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="estado">Estado</label>
+                    <select id="estado" name="estado" required>
+                        <option value="">Selecione...</option>
+                        <option value="AC">Acre</option>
+                        <option value="AL">Alagoas</option>
+                        <option value="AP">Amapá</option>
+                        <option value="AM">Amazonas</option>
+                        <option value="BA">Bahia</option>
+                        <option value="CE">Ceará</option>
+                        <option value="DF">Distrito Federal</option>
+                        <option value="ES">Espírito Santo</option>
+                        <option value="GO">Goiás</option>
+                        <option value="MA">Maranhão</option>
+                        <option value="MT">Mato Grosso</option>
+                        <option value="MS">Mato Grosso do Sul</option>
+                        <option value="MG">Minas Gerais</option>
+                        <option value="PA">Pará</option>
+                        <option value="PB">Paraíba</option>
+                        <option value="PR">Paraná</option>
+                        <option value="PE">Pernambuco</option>
+                        <option value="PI">Piauí</option>
+                        <option value="RJ">Rio de Janeiro</option>
+                        <option value="RN">Rio Grande do Norte</option>
+                        <option value="RS">Rio Grande do Sul</option>
+                        <option value="RO">Rondônia</option>
+                        <option value="RR">Roraima</option>
+                        <option value="SC">Santa Catarina</option>
+                        <option value="SP">São Paulo</option>
+                        <option value="SE">Sergipe</option>
+                        <option value="TO">Tocantins</option>
+                    </select>
+                </div>
+                
+                <fieldset class="form-group">
+                    <legend>Meio de Pagamento</legend>
+                    <label><input type="radio" name="payment" value="pix"> PIX</label>
+                    <label><input type="radio" name="payment" value="cartao"> Cartão de Crédito/Débito</label>
+                </fieldset>
+
+                <div id="pix-details" class="payment-details">
+                    <p>Leia o QR Code com o app do seu banco:</p>
+                    <img src="https://i.imgur.com/g2yXpS1.png" alt="Exemplo de QR Code PIX" width="150">
+                    <p>Ou use a chave: <strong>123.456.789-00</strong></p>
+                </div>
+                <div id="cartao-details" class="payment-details">
+                    <p>Em breve, a opção de pagamento por cartão estará disponível.</p>
+                </div>
+
+                <button type="submit" class="btn-doar">Doar Agora</button>
+            </form>
+
+            <div class="physical-donations">
+                <h3>Outras Formas de Ajudar</h3>
+                <p>Você também pode nos ajudar doando itens essenciais para o cuidado diário dos nossos animais. As doações podem ser entregues diretamente em nossa sede:</p>
+                <ul>
+                    <li>Ração para cães e gatos (filhotes e adultos)</li>
+                    <li>Coleiras e guias</li>
+                    <li>Focinheiras</li>
+                    <li>Tapetes higiênicos</li>
+                    <li>Areia para gatos</li>
+                    <li>Brinquedos e cobertores</li>
+                </ul>
+                <p><strong>Endereço:</strong> Rua das Acácias, 123 - Centro, São Joaquim da Barra - SP</p>
+            </div>
+        </div>
+
+        
+
+    </main>
+
+    <footer>
+    <div class="footer-left">
+        <img src="{% static 'Estetica_site/logo-sos-pets.png' %}" alt="Logo S.O.S Pets" class="footer-logo-img">
+        <p class="copyright">© 2025 S.O.S Pets</p>
+    </div>
+
+    <div class="footer-center">
+    <a href="/adocao/">Adoção</a>
+    <a href="/arrecadacao/">Arrecadação</a>
+    <a href="/contato/">Contato</a>
+    </div>
+
+    <div class="footer-right">
+        <p>Siga-nos nas redes:</p>
+        <div class="footer-social-icons">
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        </div>
+    </div>
+</footer>
+
+    <!-- <script src="{% static 'script.js' %}"></script> -->
+    <script src="{% static 'user_session.js' %}" defer></script>
+</body>
+</html>

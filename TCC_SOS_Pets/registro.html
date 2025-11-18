@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar - S.O.S Pets</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+  <script src="{% static 'registro.js' %}" defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="login-container">
+    <form id="register-form" class="login-form" method="post" action="#">
+      <h2>Criar conta</h2>
+
+      <div class="form-group">
+        <label for="first_name">Nome</label>
+        <input id="first_name" name="first_name" type="text" placeholder="Seu nome">
+      </div>
+
+      <div class="form-group">
+        <label for="username">Usuário</label>
+        <input id="username" name="username" type="text" required placeholder="seu_usuario">
+      </div>
+
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" required placeholder="voce@email.com">
+      </div>
+
+      <div class="form-group">
+        <label for="telefone">Telefone (opcional)</label>
+        <input id="telefone" name="telefone" type="text" placeholder="(11) 90000-0000">
+      </div>
+
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input id="password" name="password" type="password" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password2">Confirmar senha</label>
+        <input id="password2" name="password2" type="password" required>
+      </div>
+
+      <button type="submit" class="btn-submit">Registrar</button>
+      <div id="register-msg" style="margin-top:8px;"></div>
+    </form>
+  </div>
+</body>
+</html>

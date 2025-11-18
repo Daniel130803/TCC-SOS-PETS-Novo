@@ -1,0 +1,668 @@
+// --- LÓGICA DO LOGIN DEMONSTRATIVO ---
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // Encontra o formulário de login
+    const loginForm = document.getElementById('login-form');
+    
+    // Só executa se o formulário existir nesta página
+    if (loginForm) {
+        
+        loginForm.addEventListener('submit', (event) => {
+            // 1. Impede o envio real do formulário (que recarregaria a página)
+            event.preventDefault(); 
+
+            // 2. Pega os valores (o back-end faria isso)
+            const email = document.getElementById('email').value;
+            
+            // 3. Mostra um alerta demonstrativo
+            alert('Login demonstrativo realizado com sucesso!\nNo futuro, isso criará uma sessão de back-end.\nRedirecionando para a página inicial...');
+            
+            // 4. Redireciona o usuário para a página inicial
+            window.location.href = 'index.html';
+        });
+    }
+});
+
+// --- LÓGICA DO LOGIN DEMONSTRATIVO ---
+document.addEventListener('DOMContentLoaded', () => {
+    
+    const loginForm = document.getElementById('login-form');
+    
+    if (loginForm) {
+        
+        // (O seu código para o formulário de email/senha continua aqui)
+        loginForm.addEventListener('submit', (event) => {
+            // ... (código existente) ...
+        });
+
+        // =======================================
+        // ===== NOVO CÓDIGO COMEÇA AQUI =====
+        // =======================================
+
+        // --- Lógica demonstrativa para botões sociais ---
+        const googleBtn = document.getElementById('google-login-btn');
+        const facebookBtn = document.getElementById('facebook-login-btn');
+        const appleBtn = document.getElementById('apple-login-btn');
+
+        const socialLoginAlert = (platform) => {
+            alert(`Login demonstrativo com ${platform}!\nNo futuro, isso iniciará o fluxo OAuth de back-end.\nRedirecionando para a página inicial...`);
+            window.location.href = 'index.html';
+        };
+
+        googleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            socialLoginAlert('Google');
+        });
+
+        facebookBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            socialLoginAlert('Facebook');
+        });
+
+        appleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            socialLoginAlert('Apple');
+        });
+    }
+});
+
+/**
+ * Função chamada quando o usuário clica no botão para adotar um pet.
+ * @param {string} nomeAnimal - O nome do animal que está no card.
+ */
+function mostrarInteresse(nomeAnimal) {
+  // Exibe uma mensagem de alerta simples para o usuário
+  alert("Obrigado pelo seu interesse em adotar o(a) " + nomeAnimal + "! Entraremos em contato em breve para continuar o processo de adoção.");
+}
+
+// --- CÓDIGO DA PÁGINA DE ARRECADAÇÃO ---
+
+// Verifica se estamos na página de arrecadação para executar o código
+if (document.querySelector('.donation-form')) {
+    const paymentRadios = document.querySelectorAll('input[name="payment"]');
+    const pixDetails = document.getElementById('pix-details');
+    const cartaoDetails = document.getElementById('cartao-details');
+
+    paymentRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            // Esconde ambos os detalhes primeiro
+            pixDetails.style.display = 'none';
+            cartaoDetails.style.display = 'none';
+
+            // Mostra o detalhe correspondente ao radio selecionado
+            if (radio.value === 'pix' && radio.checked) {
+                pixDetails.style.display = 'block';
+            } else if (radio.value === 'cartao' && radio.checked) {
+                cartaoDetails.style.display = 'block';
+            }
+        });
+    });
+}
+
+// --- FIM DA PÁGINA DE ARRECADAÇÃO ---
+
+// --- CÓDIGO DA PÁGINA DE DENÚNCIA ---
+
+// Verifica se o input de anexo existe na página
+const anexoInput = document.getElementById('anexo');
+if (anexoInput) {
+  const fileListContainer = document.getElementById('file-list');
+
+  anexoInput.addEventListener('change', () => {
+    // Limpa a lista anterior
+    fileListContainer.innerHTML = '';
+    
+    if (anexoInput.files.length > 0) {
+      const p = document.createElement('p');
+      p.textContent = 'Arquivos selecionados:';
+      fileListContainer.appendChild(p);
+      
+      const ul = document.createElement('ul');
+      for (const file of anexoInput.files) {
+        const li = document.createElement('li');
+        li.textContent = file.name;
+        ul.appendChild(li);
+      }
+      fileListContainer.appendChild(ul);
+    }
+  });
+}
+
+// --- FIM CÓDIGO DA PÁGINA DE DENÚNCIA ---
+
+// --- CÓDIGO DA PÁGINA DE ANIMAIS PERDIDOS ---
+// --- PÁGINA 'PETS PERDIDOS' - PASSO 2: LÓGICA DO MODAL ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Só executa o código se o botão de abrir o modal existir na página
+    const openModalBtn = document.getElementById('open-lost-pet-modal-btn');
+    if (!openModalBtn) return;
+
+    const modal = document.getElementById('lost-pet-modal');
+    const closeModalBtn = document.getElementById('lost-pet-modal-close-btn');
+
+    // Função para abrir o modal
+    openModalBtn.addEventListener('click', (event) => {
+        event.preventDefault(); // Impede que a página pule para o topo
+        modal.classList.add('visible');
+    });
+
+    // Função para fechar o modal
+    const closeModal = () => {
+        modal.classList.remove('visible');
+    }
+
+    // Eventos que fecham o modal
+    closeModalBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (event) => {
+        // Fecha apenas se o clique for no fundo escuro (o overlay)
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    // Bônus: Lógica para mostrar nome do arquivo de imagem
+    const fileInput = document.getElementById('modal-pet-photo');
+    const fileNameDisplay = document.getElementById('file-name-display');
+    if(fileInput) {
+        fileInput.addEventListener('change', () => {
+            fileNameDisplay.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : '';
+        });
+    }
+});
+
+// --- PÁGINA 'PETS PERDIDOS' - PASSO 3: LÓGICA DO MODAL "ENCONTREI UM PET" ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Só executa se o botão de abrir o modal "Encontrei um pet" existir
+    const openModalBtn = document.getElementById('open-found-pet-modal-btn');
+    if (!openModalBtn) return;
+
+    const modal = document.getElementById('found-pet-modal');
+    const closeModalBtn = document.getElementById('found-pet-modal-close-btn');
+
+    // Função para abrir o modal
+    openModalBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        modal.classList.add('visible');
+    });
+
+    // Função para fechar o modal
+    const closeModal = () => {
+        modal.classList.remove('visible');
+    }
+
+    // Eventos que fecham o modal
+    closeModalBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+});
+
+// (Dentro do bloco de código da página de pets perdidos)
+
+// Bônus: Lógica para mostrar nome do arquivo de imagem do modal "Encontrei um pet"
+const foundFileInput = document.getElementById('found-pet-photo');
+const foundFileNameDisplay = document.getElementById('found-file-name-display');
+if(foundFileInput) {
+    foundFileInput.addEventListener('change', () => {
+        foundFileNameDisplay.textContent = foundFileInput.files.length > 0 ? foundFileInput.files[0].name : '';
+    });
+}
+
+// --- PÁGINA 'PETS PERDIDOS' - PASSO 3: LÓGICA DO MODAL "ENCONTREI UM PET" ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Só executa se o botão de abrir o modal "Encontrei um pet" existir
+    const openModalBtn = document.getElementById('open-found-pet-modal-btn');
+    if (!openModalBtn) return;
+
+    const modal = document.getElementById('found-pet-modal');
+    const closeModalBtn = document.getElementById('found-pet-modal-close-btn');
+
+    // Função para abrir o modal
+    openModalBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        modal.classList.add('visible');
+    });
+
+    // Função para fechar o modal
+    const closeModal = () => {
+        modal.classList.remove('visible');
+    }
+
+    // Eventos que fecham o modal
+    closeModalBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+});
+// --- FIM CÓDIGO DA PÁGINA DE ANIMAIS PERDIDOS ---
+
+// --- CÓDIGO DA PÁGINA DO FORMULÁRIO DE ADOÇÃO ---
+
+// Função para pegar o nome do pet da URL e exibir na página
+function preencherNomeDoPet() {
+  // Pega o elemento do título onde o nome do pet será exibido
+  const petNameTitle = document.getElementById('pet-name-title');
+
+  // Se o elemento não existir na página, não faz nada
+  if (!petNameTitle) {
+    return;
+  }
+
+  // Pega os parâmetros da URL (a parte depois do "?")
+  const urlParams = new URLSearchParams(window.location.search);
+
+  // Pega o valor do parâmetro "pet"
+  const petName = urlParams.get('pet');
+
+  // Se o parâmetro "pet" existir na URL...
+  if (petName) {
+    // ...exibe o nome do pet no título.
+    petNameTitle.textContent = `Seu interesse é no(a): ${petName}`;
+  } else {
+    // ...senão, esconde o elemento do título.
+    petNameTitle.style.display = 'none';
+  }
+}
+
+// Executa a função quando a página termina de carregar
+window.onload = preencherNomeDoPet;
+
+// --- LÓGICA COMPLETA E FUNCIONAL DA PÁGINA DE ADOÇÃO ---
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- LÓGICA DO FILTRO DE ESTADOS E CIDADES ---
+    const estadoSelect = document.getElementById('estado-select');
+    const cidadeSelect = document.getElementById('cidade-select');
+
+    if (estadoSelect) { // Só executa se encontrar o seletor de estados
+        const estadosCidades = {
+            "AC": ["Rio Branco"], "AL": ["Maceió"], "AP": ["Macapá"], "AM": ["Manaus"],
+            "BA": ["Salvador", "Feira de Santana"], "CE": ["Fortaleza"], "DF": ["Brasília"],
+            "ES": ["Vitória"], "GO": ["Goiânia"], "MA": ["São Luís"], "MT": ["Cuiabá"],
+            "MS": ["Campo Grande"], "MG": ["Belo Horizonte", "Uberlândia"],
+            "PA": ["Belém"], "PB": ["João Pessoa"], "PR": ["Curitiba"], "PE": ["Recife"],
+            "PI": ["Teresina"], "RJ": ["Rio de Janeiro", "Niterói", "São Gonçalo"],
+            "RN": ["Natal"], "RS": ["Porto Alegre"], "RO": ["Porto Velho"], "RR": ["Boa Vista"],
+            "SC": ["Florianópolis"],
+            "SP": ["São Paulo", "Guarulhos", "Campinas", "São Bernardo do Campo", "São José dos Campos", "Santo André", "Ribeirão Preto", "Osasco", "Sorocaba", "São Joaquim da Barra", "Orlândia"],
+            "SE": ["Aracaju"], "TO": ["Palmas"]
+        };
+
+        for (const sigla in estadosCidades) {
+            const option = document.createElement('option');
+            option.value = sigla;
+            option.textContent = sigla;
+            estadoSelect.appendChild(option);
+        }
+
+        estadoSelect.addEventListener('change', () => {
+            const estadoSelecionado = estadoSelect.value;
+            cidadeSelect.innerHTML = '<option value="">Todas as Cidades</option>';
+            if (estadoSelecionado) {
+                cidadeSelect.disabled = false;
+                const cidades = estadosCidades[estadoSelecionado];
+                cidades.forEach(cidade => {
+                    const option = document.createElement('option');
+                    option.value = cidade.toLowerCase().replace(/ /g, '-');
+                    option.textContent = cidade;
+                    cidadeSelect.appendChild(option);
+                });
+            } else {
+                cidadeSelect.disabled = true;
+                cidadeSelect.innerHTML = '<option value="">Escolha um estado</option>';
+            }
+        });
+    }
+
+
+    // --- LÓGICA DE FILTRAGEM DOS ANIMAIS ---
+    const filterForm = document.querySelector('.new-filter-form');
+    if (filterForm) { // Só executa se o formulário de filtro existir
+        const animalCards = document.querySelectorAll('.animal-card');
+        const noResultsMessage = document.getElementById('no-results-message');
+
+        filterForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            
+            const filters = {
+                especie: filterForm.querySelector('[name=especie]').value,
+                porte: filterForm.querySelector('[name=porte]').value,
+                estado: filterForm.querySelector('[name=estado]').value,
+                cidade: filterForm.querySelector('[name=cidade]').value,
+                nome: filterForm.querySelector('[name=nome-pet]').value.toLowerCase().trim()
+                // O filtro de sexo não estava no seu último HTML, mas a lógica está aqui caso precise
+                // sexo: filterForm.querySelector('[name=sexo]').value 
+            };
+
+            let resultsFound = 0;
+
+            animalCards.forEach(card => {
+                const cardData = card.dataset;
+                
+                const matchesEspecie = filters.especie === '' || cardData.especie === filters.especie;
+                const matchesPorte = filters.porte === '' || cardData.porte === filters.porte;
+                const matchesEstado = filters.estado === '' || cardData.estado === filters.estado;
+                const matchesCidade = filters.cidade === '' || cardData.cidade === filters.cidade;
+                const matchesNome = filters.nome === '' || cardData.nome.includes(filters.nome);
+
+                if (matchesEspecie && matchesPorte && matchesEstado && matchesCidade && matchesNome) {
+                    card.style.display = 'flex';
+                    resultsFound++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (resultsFound === 0) {
+                noResultsMessage.style.display = 'block';
+            } else {
+                noResultsMessage.style.display = 'none';
+            }
+        });
+    }
+});
+
+// --- LÓGICA COMPLETA E SIMPLIFICADA DA PÁGINA 'PETS PERDIDOS' ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Só executa se estivermos na página de pets perdidos (verificando pelo novo seletor de estado)
+    if (document.getElementById('state-filter-select')) {
+        
+        // --- 1. VARIÁVEIS E DADOS ---
+        const estadoSelectSimple = document.getElementById('state-filter-select'); // Novo ID
+        const resultsContainer = document.getElementById('results-container');
+        const noResultsMessage = document.getElementById('no-results-message-lost');
+        let map;
+        let markerLayer;
+
+        // Dados de exemplo dos animais perdidos (ADICIONE MAIS SE QUISER)
+        let allPetsData = [
+            { id: 1, nome: "Bobi", especie: "cao", lat: -20.58116459272731, lon: -47.8607928341377, img: "", estado: "SP", cidade: "sao-joaquim-da-barra", lastSeen: "Praça Central, São Joaquim da Barra - SP", ownerName: "Carlos Alberto", ownerPhone: "(16) 91111-2222", ownerEmail: "carlos@email.com"},
+
+            { id: 2, nome: "Luna", especie: "gato", lat: -20.590490, lon: -47.850177, img: "", lastSeen: "Rua José Miguel, São Joaquim da Barra - SP", ownerName: "Samira Mendes", ownerPhone: "(21) 92222-3333", ownerEmail: "samira@email.com"},
+
+            { id: 3, nome: "Max", especie: "cao", lat: -20.587752, lon: -47.861170, img: "", estado: "SP", cidade: "sao-joaquim-da-barra", lastSeen: "R. Piratininga, São Joaquim da Barra - SP", ownerName: "Ana Silva", ownerPhone: "(16) 93333-4444", ownerEmail: "ana.silva@email.com"},
+
+            { id: 4, nome: "Toby", especie: "cao", lat: -20.605294, lon: -47.868031, img: "", estado: "SP", cidade: "sao-joaquim-da-barra", lastSeen: "Rua João Batista Scarpelini, São Joaquim da Barra - SP", ownerName: "Carlos Alberto", ownerPhone: "(16) 91111-2222", ownerEmail: "carlos@email.com"},
+
+            { id: 5, nome: "Nala", especie: "gato", lat: -20.590028, lon: -47.877558, img: "", estado: "SP", cidade: "sao-joaquim-da-barra", lastSeen: "R. Profa. Ercy Cavalcante de Lollo, 2-1362, São Joaquim da Barra - SP", ownerName: "Samira Mendes", ownerPhone: "(21) 92222-3333", ownerEmail: "samira@email.com"},
+
+            { id: 6, nome: "Zeus", especie: "cao", lat: -20.709298, lon: -47.867087, img: "", estado: "SP", cidade: "orlandia", lastSeen: "Parque Cecap, Orlândia - SP", ownerName: "Carlos Alberto", ownerPhone: "(16) 91111-2222", ownerEmail: "carlos@email.com"},
+
+            { id: 7, nome: "Mia", especie: "gato", lat: -20.717969, lon: -47.886742, img: "", estado: "SP", cidade: "orlandia", lastSeen: "Jardim Arantes, Orlândia - SP", ownerName: "Samira Mendes", ownerPhone: "(21) 92222-3333", ownerEmail: "samira@email.com"},
+
+            { id: 8, nome: "Rocky", especie: "cao", lat: -20.707692, lon: -47.899874, img: "", estado: "SP", cidade: "orlandia", lastSeen: "Conj. Hab. Dr. Júllio Bucci, Orlândia - SP", ownerName: "Ana Silva", ownerPhone: "(16) 93333-4444", ownerEmail: "ana.silva@email.com"},
+
+            { id: 9, nome: "Chloe", especie: "cao", lat: -20.728003, lon: -47.891806, img: "", estado: "SP", cidade: "orlandia", lastSeen: "Praça Central, Orlândia - SP", ownerName: "Carlos Alberto", ownerPhone: "(16) 91111-2222", ownerEmail: "carlos@email.com"},
+
+            { id: 10, nome: "Jasper", especie: "gato", lat: -20.712188, lon: -47.854813, img: "", estado: "SP", cidade: "orlandia", lastSeen: "José Vieira Brasão, Orlândia - SP", ownerName: "Samira Mendes", ownerPhone: "(21) 92222-3333", ownerEmail: "samira@email.com"},
+
+            { id: 11, nome: "Willow", especie: "cao", lat: -20.733402, lon: -47.763039, img: "", estado: "SP", cidade: "nuporanga", lastSeen: "R.Ana Higina Ribeiro, Nuporanga - SP", ownerName: "Carlos Alberto", ownerPhone: "(16) 91111-2222", ownerEmail: "carlos@email.com"},
+
+            { id: 12, nome: "Milo", especie: "gato", lat: -20.732318, lon: -47.763210, img: "", estado: "SP", cidade: "nuporanga", lastSeen: "R. Visc. do Ouro Preto, Nuporanga - SP", ownerName: "Samira Mendes", ownerPhone: "(21) 92222-3333", ownerEmail: "samira@email.com"},
+
+            { id: 13, nome: "Sasha", especie: "cao", lat: -20.735689, lon: -47.756602, img: "", lastSeen: "R. Maria Bernadete Alves de Souza, Nuporanga - SP", ownerName: "Ana Silva", ownerPhone: "(16) 93333-4444", ownerEmail: "ana.silva@email.com"},
+            
+            { id: 14, nome: "Biscoito", especie: "cao", lat: -20.724451, lon: -47.753211, img: "", estado: "SP", cidade: "nuporanga", lastSeen: "R. Luís Sabami Neto, Jardim Santa Cruz, Nuporanga - SP", ownerName: "Carlos Alberto", ownerPhone: "(16) 91111-2222", ownerEmail: "carlos@email.com"},
+
+            { id: 15, nome: "Penélope", especie: "gato", lat: -20.730351, lon: -47.747503, img: "", estado: "SP", cidade: "nuporanga", lastSeen: "Centro, Nuporanga - SP", ownerName: "Samira Mendes", ownerPhone: "(21) 92222-3333", ownerEmail: "samira@email.com"},
+
+            { id: 16, nome: "Simba", especie: "cao", lat: -20.431921, lon: -47.812400, img: "", estado: "SP", cidade: "guara", lastSeen: "R. Antônio Felisberto de Figueiredo Filho, Guará - SP", ownerName: "Carlos Alberto", ownerPhone: "(16) 91111-2222", ownerEmail: "carlos@email.com"},
+
+            { id: 17, nome: "Pipoca", especie: "gato", lat: -20.439216, lon: -47.834371, img: "", estado: "SP", cidade: "guara", lastSeen: "R. Homero Junqueira - Guará - SP", ownerName: "Samira Mendes", ownerPhone: "(21) 92222-3333", ownerEmail: "samira@email.com"},
+
+            { id: 18, nome: "Thor", especie: "cao", lat: -20.429202, lon: -47.830852, img: "", estado: "SP", cidade: "guara", lastSeen: "R. Heretiano D. Antunes, Guará - SP", ownerName: "Ana Silva", ownerPhone: "(16) 93333-4444", ownerEmail: "ana.silva@email.com"},
+
+            { id: 19, nome: "Amora", especie: "cao", lat: -20.425462, lon: -47.813986, img: "", lastSeen: "R. Horácio Borges de Freitas, Guará - SP", ownerName: "Carlos Alberto", ownerPhone: "(16) 91111-2222", ownerEmail: "carlos@email.com"},
+
+            { id: 20, nome: "Chico", especie: "gato", lat: -20.430127, lon: -47.824372, img: "", estado: "SP", cidade: "guara", lastSeen: "R. Francisco Maria Luís, Guará - SP", ownerName: "Samira Mendes", ownerPhone: "(21) 92222-3333", ownerEmail: "samira@email.com"},
+
+            { id: 21, nome: "Cleo", especie: "cao", lat: -21.135797, lon: -47.846983, img: "", estado: "SP", cidade: "ribeirao-preto", lastSeen: "Dom Bernardo Jose Mielle, Ribeirão Preto - SP", ownerName: "Carlos Alberto", ownerPhone: "(16) 91111-2222", ownerEmail: "carlos@email.com"},
+
+            { id: 22, nome: "Duke", especie: "gato", lat: -21.197107, lon: -47.843035, img: "", estado: "SP", cidade: "ribeirao-preto", lastSeen: "Subsetor Oeste - 4 (O-4), Ribeirão Preto - RJ", ownerName: "Samira Mendes", ownerPhone: "(21) 92222-3333", ownerEmail: "samira@email.com"},
+
+            { id: 23, nome: "Mel", especie: "cao", lat: -21.184463, lon: -47.795484, img: "", estado: "SP", cidade: "ribeirao-preto", lastSeen: "Jardim Macedo, Ribeirão Preto - SP", ownerName: "Ana Silva", ownerPhone: "(16) 93333-4444", ownerEmail: "ana.silva@email.com"},
+
+            { id: 24, nome: "Oliver", especie: "cao", lat: -21.218712, lon: -47.810419, img: "", estado: "SP", cidade: "ribeirao-preto", lastSeen: "Jardim Canada, Ribeirão Preto - SP", ownerName: "Carlos Alberto", ownerPhone: "(16) 91111-2222", ownerEmail: "carlos@email.com"},
+
+            { id: 25, nome: "Frida", especie: "gato", lat: -21.199828, lon: -47.774885, img: "", estado: "SP", cidade: "ribeirao-preto", lastSeen: "Nova Ribeirânia, Ribeirão Preto - SP", ownerName: "Samira Mendes", ownerPhone: "(21) 92222-3333", ownerEmail: "samira@email.com"},
+
+            { id: 26, nome: "Zeca", especie: "cao", lat: -20.546785, lon: -47.381739, img: "", estado: "SP", cidade: "franca", lastSeen: "Vila Scarabucci, Franca - SP", ownerName: "Carlos Alberto", ownerPhone: "(16) 91111-2222", ownerEmail: "carlos@email.com"},
+
+            { id: 27, nome: "Cacau", especie: "gato", lat: -20.537381, lon: -47.417272, img: "", estado: "SP", cidade: "franca", lastSeen: "Jardim California, Franca - SP", ownerName: "Samira Mendes", ownerPhone: "(21) 92222-3333", ownerEmail: "samira@email.com"},
+
+            { id: 28, nome: "Apolo", especie: "cao", lat: -20.527093, lon: -47.406629, img: "", estado: "SP", cidade: "franca", lastSeen: "Vila Ninacio, Franca - SP", ownerName: "Ana Silva", ownerPhone: "(16) 93333-4444", ownerEmail: "ana.silva@email.com"},
+
+            { id: 29, nome: "Nina", especie: "cao", lat: -20.545519, lon: -47.385880, img: "", estado: "SP", cidade: "franca", lastSeen: "Vila Scarabucci, Franca - SP", ownerName: "Carlos Alberto", ownerPhone: "(16) 91111-2222", ownerEmail: "carlos@email.com"},
+
+            { id: 30, nome: "Guler", especie: "gato", lat: -20.530690, lon: -47.379056, img: "", estado: "SP", cidade: "franca", lastSeen: "Santo Agostinho, Franca - SP", ownerName: "Samira Mendes", ownerPhone: "(21) 92222-3333", ownerEmail: "samira@email.com"},
+            
+            
+        ];
+
+        const estados = ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",]; // Lista simplificada de estados (adicione mais)
+
+        // --- 2. FUNÇÃO PRINCIPAL DE RENDERIZAÇÃO ---
+        function renderPets(petsToRender) {
+            resultsContainer.innerHTML = '';
+            if (markerLayer) markerLayer.clearLayers();
+            noResultsMessage.style.display = petsToRender.length === 0 ? 'block' : 'none';
+
+            petsToRender.forEach(pet => {
+                const card = document.createElement('div');
+                card.className = 'card-lost-pet'; // Classe do card
+                // Adiciona dados necessários
+                card.dataset.estado = pet.estado;
+                card.dataset.nome = pet.nome.toLowerCase();
+                card.dataset.ownerName = pet.ownerName;
+                card.dataset.ownerPhone = pet.ownerPhone;
+                card.dataset.ownerEmail = pet.ownerEmail;
+                card.dataset.petName = pet.nome;
+
+               // Molde HTML do Card
+                card.innerHTML = `
+                    <div class="card-lost-image">
+                        <img src="${pet.img}" alt="${pet.nome}">
+                        <span class="lost-badge">Perdido</span>
+                    </div>
+                    <div class="card-lost-content">
+                        <h5>${pet.nome}</h5>
+                        <p class="location"><i class="fas fa-map-marker-alt"></i> ${pet.lastSeen}</p>
+                        <a href="#" class="info-button">Tenho Informações</a>
+                    </div>
+                `;
+                resultsContainer.appendChild(card);
+                
+                if (map && pet.lat && pet.lon) {
+                    const marker = L.marker([pet.lat, pet.lon]).addTo(markerLayer);
+                    marker.bindPopup(`<b style="font-family: 'Poppins', sans-serif;">${pet.nome}</b>`);
+                }
+            });
+        }
+        
+        // --- 3. INICIALIZAÇÃO DA PÁGINA ---
+        // Mapa
+        map = L.map('map-container').setView([-20.939, -47.855], 8);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        markerLayer = L.layerGroup().addTo(map);
+        
+        // Preenche Estados no filtro simplificado
+        estados.forEach(sigla => estadoSelectSimple.add(new Option(sigla, sigla)));
+        
+        // Renderiza todos os pets inicialmente
+        renderPets(allPetsData);
+        
+        // --- 4. EVENTO DO FILTRO SIMPLIFICADO ---
+        estadoSelectSimple.addEventListener('change', () => {
+            const selectedState = estadoSelectSimple.value;
+            
+            // Filtra os pets
+            const filteredPets = allPetsData.filter(pet => 
+                !selectedState || pet.estado === selectedState
+            );
+            
+            // Re-renderiza a lista e o mapa
+            renderPets(filteredPets);
+        });
+
+        // --- 4. LÓGICA DOS MODAIS (Apenas abrir/fechar por enquanto) ---
+
+        // Modal "Perdi meu Pet"
+        const openLostModalBtn = document.getElementById('open-lost-pet-modal-btn');
+        const lostPetModal = document.getElementById('lost-pet-modal');
+        const closeLostModalBtn = document.getElementById('lost-pet-modal-close-btn');
+        if(openLostModalBtn && lostPetModal && closeLostModalBtn){
+             openLostModalBtn.addEventListener('click', (e) => { e.preventDefault(); lostPetModal.classList.add('visible'); });
+             const closeLostModal = () => lostPetModal.classList.remove('visible');
+             closeLostModalBtn.addEventListener('click', closeLostModal);
+             lostPetModal.addEventListener('click', (e) => { if (e.target === lostPetModal) closeLostModal(); });
+             // Lógica do formulário interno (upload, geocodificação) virá depois
+        }
+
+        // Modal "Encontrei um Pet"
+        const openFoundModalBtn = document.getElementById('open-found-pet-modal-btn');
+        const foundPetModal = document.getElementById('found-pet-modal');
+        const closeFoundModalBtn = document.getElementById('found-pet-modal-close-btn');
+         if(openFoundModalBtn && foundPetModal && closeFoundModalBtn){
+             openFoundModalBtn.addEventListener('click', (e) => { e.preventDefault(); foundPetModal.classList.add('visible'); });
+             const closeFoundModal = () => foundPetModal.classList.remove('visible');
+             closeFoundModalBtn.addEventListener('click', closeFoundModal);
+             foundPetModal.addEventListener('click', (e) => { if (e.target === foundPetModal) closeFoundModal(); });
+             // Lógica do formulário interno virá depois
+        }
+
+        // Modal "Tenho Informações" (Contato do Dono)
+        const contactModal = document.getElementById('contact-modal');
+        const contactModalCloseBtn = document.getElementById('contact-modal-close-btn');
+        const modalPetName = document.getElementById('modal-pet-name');
+        const modalOwnerName = document.getElementById('modal-owner-name');
+        const modalOwnerPhone = document.getElementById('modal-owner-phone');
+        const modalOwnerEmail = document.getElementById('modal-owner-email');
+
+        if(contactModal && contactModalCloseBtn){
+            const closeContactModal = () => contactModal.classList.remove('visible');
+            contactModalCloseBtn.addEventListener('click', closeContactModal);
+            contactModal.addEventListener('click', (e) => { if(e.target === contactModal) closeContactModal(); });
+
+            // Evento para ABRIR o modal de contato ao clicar no botão do card
+            resultsContainer.addEventListener('click', (event) => {
+                if (event.target.classList.contains('info-button')) {
+                    event.preventDefault();
+                    const card = event.target.closest('.card-lost-pet');
+
+                    // Preenche o modal com os dados do card clicado
+                    modalPetName.textContent = card.dataset.petName;
+                    modalOwnerName.textContent = card.dataset.ownerName;
+                    modalOwnerPhone.textContent = card.dataset.ownerPhone;
+                    modalOwnerEmail.textContent = card.dataset.ownerEmail;
+
+                    contactModal.classList.add('visible');
+                }
+            });
+        }
+
+    } // Fim do if da página
+}); // Fim do DOMContentLoaded
+
+// --- PÁGINA 'PETS PERDIDOS' - PASSO 2: INICIALIZAÇÃO DO MAPA ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Verifica se estamos na página correta (pelo ID do botão)
+    if (document.getElementById('open-lost-pet-modal-btn')) {
+
+        // Inicializa o mapa
+        if (document.getElementById('map-container')) {
+            // Coordenadas de São Joaquim da Barra e zoom inicial
+            const map = L.map('map-container').setView([-20.939, -47.855], 13);
+
+            // Adiciona a camada de imagens do mapa
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            console.log("Mapa inicializado."); // Mensagem para confirmar no console
+        }
+
+        // (Lógica dos modais e cards virá aqui nos próximos passos)
+
+    } // Fim do if da página
+}); // Fim do DOMContentLoaded
+
+// --- 5. LÓGICA DO MODAL DE CONTATO ---
+        const contactModal = document.getElementById('contact-modal');
+        const contactModalCloseBtn = document.getElementById('contact-modal-close-btn'); 
+        const modalPetName = document.getElementById('modal-pet-name');
+        const modalOwnerName = document.getElementById('modal-owner-name');
+        const modalOwnerPhone = document.getElementById('modal-owner-phone');
+        const modalOwnerEmail = document.getElementById('modal-owner-email');
+
+        if (contactModal && contactModalCloseBtn && modalPetName) { // Verifica se todos os elementos existem
+            
+            // Função para fechar o modal
+            const closeContactModal = () => contactModal.classList.remove('visible');
+            
+            // Evento para fechar no botão 'X'
+            contactModalCloseBtn.addEventListener('click', closeContactModal);
+            
+            // Evento para fechar clicando fora
+            contactModal.addEventListener('click', (e) => { 
+                if(e.target === contactModal) closeContactModal(); 
+            });
+
+            // Evento para ABRIR o modal quando clicar em "Tenho Informações"
+            // Usamos delegação de eventos no container da galeria
+            resultsContainer.addEventListener('click', (event) => {
+                // Verifica se o clique foi no botão correto
+                if (event.target.classList.contains('info-button')) {
+                    event.preventDefault(); // Impede o link de navegar
+                    const card = event.target.closest('.card-lost-pet'); // Encontra o card pai
+                    
+                    // Preenche o modal com os dados do 'dataset' do card
+                    modalPetName.textContent = card.dataset.petName;
+                    modalOwnerName.textContent = card.dataset.ownerName;
+                    modalOwnerPhone.textContent = card.dataset.ownerPhone;
+                    modalOwnerEmail.textContent = card.dataset.ownerEmail;
+
+                    // Mostra o modal
+                    contactModal.classList.add('visible');
+                }
+            });
+        } // Fim do if(contactModal)
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('.login-form') || document.getElementById('login-form');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const u = document.getElementById('username')?.value?.trim();
+    const p = document.getElementById('password')?.value || '';
+    if (!u || !p) { alert('Preencha usuário e senha.'); return; }
+
+    try {
+      const resp = await fetch('/api/auth/token/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, password: p })
+      });
+      const data = await resp.json().catch(()=>({}));
+      if (!resp.ok) throw new Error(data.detail || 'Credenciais inválidas');
+
+      localStorage.setItem('access', data.access);
+      localStorage.setItem('refresh', data.refresh);
+      window.location.href = '/';
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+});
+
+export async function authFetch(url, options = {}) {
+    const token = localStorage.getItem('access');
+    const headers = Object.assign({}, options.headers || {});
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return fetch(url, { ...options, headers });
+}

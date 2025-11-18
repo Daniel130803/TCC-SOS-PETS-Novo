@@ -1,0 +1,205 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil - S.O.S Pets</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+
+<div class="site-content">
+    <header>
+        <a href="/" class="header-logo-link">
+            <i class="fas fa-paw"></i>
+            <span class="logo-text">S.O.S Pets</span>
+        </a>
+
+        <nav>
+            <a href="/adocao/"><i class="fas fa-heart"></i><span>Adoção</span></a>
+            <a href="/arrecadacao/"><i class="fas fa-hand-holding-heart"></i><span>Arrecadação</span></a>
+            <a href="/denuncia/"><i class="fas fa-bullhorn"></i><span>Denúncia</span></a>
+            <a href="/animais-perdidos/"><i class="fas fa-search"></i><span>Pets Perdidos</span></a>
+            <a href="/contato/"><i class="fas fa-envelope"></i><span>Contato</span></a>
+            <div class="nav-user-area"></div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="profile-container" style="max-width: 600px; margin: 2rem auto; padding: 2rem;">
+            <div class="page-title">
+                <h2>Meu Perfil</h2>
+                <p>Gerencie suas informações pessoais</p>
+            </div>
+
+            <div id="profile-loading" style="text-align: center; padding: 2rem;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
+                <p>Carregando...</p>
+            </div>
+
+            <div id="profile-error" style="display: none; text-align: center; padding: 2rem; color: #d32f2f;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Você precisa estar autenticado para ver esta página.</p>
+                <a href="/login/" class="btn-submit" style="display: inline-block; margin-top: 1rem;">Ir para Login</a>
+            </div>
+
+            <form id="profile-form" style="display: none;">
+                <div class="form-group">
+                    <label for="username">Usuário</label>
+                    <input type="text" id="username" disabled>
+                    <small style="color: #666;">O nome de usuário não pode ser alterado</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="first_name">Nome</label>
+                    <input type="text" id="first_name" name="first_name" placeholder="Seu nome">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" placeholder="seu@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="telefone">Telefone</label>
+                    <input type="text" id="telefone" name="telefone" placeholder="(11) 90000-0000">
+                </div>
+
+                <div id="profile-message" style="margin: 1rem 0; padding: 0.75rem; border-radius: 4px; display: none;"></div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-save"></i> Salvar Alterações
+                </button>
+            </form>
+        </div>
+    </main>
+</div>
+
+<footer>
+    <div class="footer-left">
+        <img src="{% static 'Estetica_site/logo-sos-pets.png' %}" alt="Logo S.O.S Pets" class="footer-logo-img">
+        <p class="copyright">© 2025 S.O.S Pets</p>
+    </div>
+
+    <div class="footer-center">
+        <a href="/adocao/">Adoção</a>
+        <a href="/arrecadacao/">Arrecadação</a>
+        <a href="/contato/">Contato</a>
+    </div>
+
+    <div class="footer-right">
+        <p>Siga-nos nas redes:</p>
+        <div class="footer-social-icons">
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        </div>
+    </div>
+</footer>
+
+<script src="{% static 'user_session.js' %}" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    const loadingEl = document.getElementById('profile-loading');
+    const errorEl = document.getElementById('profile-error');
+    const formEl = document.getElementById('profile-form');
+    const messageEl = document.getElementById('profile-message');
+
+    const access = localStorage.getItem('access');
+    const refresh = localStorage.getItem('refresh');
+
+    if (!access) {
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    async function loadProfile() {
+        try {
+            const resp = await fetch('/api/auth/me/', {
+                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('access') }
+            });
+
+            if (resp.status === 401 && refresh) {
+                // Tenta refresh
+                const refreshResp = await fetch('/api/auth/token/refresh/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh })
+                });
+                if (refreshResp.ok) {
+                    const data = await refreshResp.json();
+                    localStorage.setItem('access', data.access);
+                    return loadProfile(); // Retry
+                }
+                throw new Error('Token expirado');
+            }
+
+            if (!resp.ok) throw new Error('Erro ao carregar perfil');
+
+            const data = await resp.json();
+            
+            document.getElementById('username').value = data.username || '';
+            document.getElementById('first_name').value = data.first_name || '';
+            document.getElementById('email').value = data.email || '';
+            document.getElementById('telefone').value = data.telefone || '';
+
+            loadingEl.style.display = 'none';
+            formEl.style.display = 'block';
+
+        } catch (err) {
+            loadingEl.style.display = 'none';
+            errorEl.style.display = 'block';
+        }
+    }
+
+    await loadProfile();
+
+    formEl.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const payload = {
+            first_name: document.getElementById('first_name').value,
+            email: document.getElementById('email').value,
+            telefone: document.getElementById('telefone').value
+        };
+
+        try {
+            const resp = await fetch('/api/auth/me/', {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('access'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (resp.ok) {
+                messageEl.textContent = 'Perfil atualizado com sucesso!';
+                messageEl.style.backgroundColor = '#4caf50';
+                messageEl.style.color = 'white';
+                messageEl.style.display = 'block';
+                setTimeout(() => { messageEl.style.display = 'none'; }, 3000);
+            } else {
+                const err = await resp.json();
+                messageEl.textContent = 'Erro: ' + (err.email?.[0] || err.detail || 'Falha ao atualizar');
+                messageEl.style.backgroundColor = '#f44336';
+                messageEl.style.color = 'white';
+                messageEl.style.display = 'block';
+            }
+        } catch (err) {
+            messageEl.textContent = 'Erro de conexão. Tente novamente.';
+            messageEl.style.backgroundColor = '#f44336';
+            messageEl.style.color = 'white';
+            messageEl.style.display = 'block';
+        }
+    });
+});
+</script>
+</body>
+</html>

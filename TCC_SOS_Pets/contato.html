@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contato - S.O.S Pets</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+
+    <header>
+    <a href="/" class="header-logo-link">
+        <i class="fas fa-paw"></i>
+        <span class="logo-text">S.O.S Pets</span>
+    </a>
+
+    <nav>
+        <a href="/adocao/"><i class="fas fa-heart"></i><span>Adoção</span></a>
+        <a href="/arrecadacao/"><i class="fas fa-hand-holding-heart"></i><span>Arrecadação</span></a>
+        <a href="/denuncia/"><i class="fas fa-bullhorn"></i><span>Denúncia</span></a>
+        <a href="/animais-perdidos/"><i class="fas fa-search"></i><span>Pets Perdidos</span></a>
+        <a href="/contato/"><i class="fas fa-envelope"></i><span>Contato</span></a>
+        <div class="nav-user-area"></div>
+    </nav>
+</header>
+
+<div class="site-content">
+    <main>
+        <div class="contact-container">
+            <div class="page-title">
+                <h2>Entre em Contato</h2>
+                <p>Tem alguma dúvida, sugestão ou quer ser nosso parceiro? Fale conosco!</p>
+            </div>
+
+            <form class="contact-form" action="#" method="post">
+                <div class="form-group">
+                    <label for="assunto">Assunto</label>
+                    <select id="assunto" name="assunto" required>
+                        <option value="" disabled selected>Selecione um assunto</option>
+                        <option value="parceria">Parceria</option>
+                        <option value="sugestao">Sugestão para a empresa</option>
+                        <option value="duvidas">Dúvidas Gerais</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email para retorno</label>
+                    <input type="email" id="email" name="email" placeholder="seuemail@exemplo.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefone">Telefone com WhatsApp (Opcional)</label>
+                    <input type="tel" id="telefone" name="telefone" placeholder="Insira seu telefone com DDD">
+                </div>
+
+                <div class="form-group">
+                    <label for="mensagem">Mensagem</label>
+                    <textarea id="mensagem" name="mensagem" rows="7" placeholder="Escreva sua mensagem aqui..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">Enviar Mensagem</button>
+            </form>
+        </div>
+    </main>
+</div>
+
+<footer>
+    <div class="footer-left">
+            <img src="{% static 'Estetica_site/logo-sos-pets.png' %}" alt="Logo S.O.S Pets" class="footer-logo-img">
+        <p class="copyright">© 2025 S.O.S Pets</p>
+    </div>
+    <div class="footer-center">
+        <a href="/adocao/">Adoção</a>
+        <a href="/arrecadacao/">Arrecadação</a>
+        <a href="/contato/">Contato</a>
+    </div>
+    <div class="footer-right">
+        <p>Siga-nos nas redes:</p>
+        <div class="footer-social-icons">
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        </div>
+    </div>
+</footer>
+
+    <!-- <script src="{% static 'script.js' %}"></script> -->
+    <script src="{% static 'user_session.js' %}" defer></script>
+</body>
+</html>

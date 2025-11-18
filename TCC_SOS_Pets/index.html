@@ -1,0 +1,295 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Início - SOS Pets</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+
+<body>
+
+    <header>
+    <a href="index.html" class="header-logo-link">
+        <i class="fas fa-paw"></i>
+        <span class="logo-text">S.O.S Pets</span>
+    </a>
+
+    <nav>
+        <a href="/adocao/"><i class="fas fa-heart"></i><span>Adoção</span></a>
+        <a href="/arrecadacao/"><i class="fas fa-hand-holding-heart"></i><span>Arrecadação</span></a>
+        <a href="/denuncia/"><i class="fas fa-bullhorn"></i><span>Denúncia</span></a>
+        <a href="/animais-perdidos/"><i class="fas fa-search"></i><span>Pets Perdidos</span></a>
+        <a href="/contato/"><i class="fas fa-envelope"></i><span>Contato</span></a>
+        <div class="nav-user-area"></div>
+    </nav>
+</header>
+
+    <section class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">Adoção e Reencontro de Pets em um só lugar.</h1>
+        <p class="hero-subtitle">Utilize nossas ferramentas para encontrar um novo amigo ou para divulgar um pet perdido e trazê-lo de volta para casa.</p>
+        
+        <div class="hero-buttons">
+            <a href="/adocao/" class="hero-btn primary"><i class="fas fa-heart"></i> Quero Adotar</a>
+            <a href="/animais-perdidos/" class="hero-btn secondary"><i class="fas fa-search"></i> Procurar Pet Perdido</a>
+        </div>
+
+        <div class="hero-stats">
+            <div class="stat-item">
+                <span class="stat-number">600+</span>
+                <span class="stat-label">Finais Felizes</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">250+</span>
+                <span class="stat-label">Adoções Realizadas</span>
+            </div>
+        </div>
+    </div>
+    <div class="hero-image-container">
+    <img src="{% static 'Estetica_site/menina-abracando-dela-cao_1368-25179.png' %}" alt="Mulher feliz abraçando seu cachorro" class="hero-main-img">
+        
+        <div class="deco-shape"></div>
+        <i class="fas fa-paw deco-paw1"></i>
+        <i class="fas fa-paw deco-paw2"></i>
+        <i class="fas fa-heart deco-heart"></i>
+    </div>
+</section>
+
+    <main>
+        <section class="about-us">
+            <h2>Quem Somos</h2>
+            <p>
+                Nascida em 2025 de um amor que não conhece fronteiras, a SOS Pets tem sua base em São Joaquim da Barra (SP) e um coração que abraça todo o Brasil. Somos um movimento digital que conecta pessoas que acreditam no poder de uma segunda chance, transformando o abandono em acolhimento e ajudando a reescrever a história de cães e gatos em todo o país.
+            </p>
+        </section>
+
+        <div class="carousel-title-container">
+    <h2 class="section-title">Conheça alguns dos nossos resgatados</h2>
+</div>
+<section class="carousel-container">
+    <div class="carousel-slide">
+    <img src="{% static 'Estetica_site/cachorro2.jpg' %}" alt="Cachorro feliz resgatado">
+    <img src="{% static 'Estetica_site/gato3.jpg' %}" alt="Gato curioso resgatado">
+    <img src="{% static 'Estetica_site/gato1.jpg' %}" alt="Cachorro e gato brincando juntos">
+    <img src="{% static 'Estetica_site/cachorro9.jpg' %}" alt="Cachorro sorrindo para a câmera">
+    <img src="{% static 'Estetica_site/gato2.jpg' %}" alt="Gatinho fofo olhando para cima">
+
+    <img src="{% static 'Estetica_site/cachorro1.jpg' %}" alt="Cachorro feliz resgatado">
+    <img src="{% static 'Estetica_site/cachorro6.jpg' %}" alt="Gato curioso resgatado">
+    <img src="{% static 'Estetica_site/cachorro8.jpg' %}" alt="Cachorro e gato brincando juntos">
+    <img src="{% static 'Estetica_site/cachorro7.jpg' %}" alt="Cachorro sorrindo para a câmera">
+    <img src="{% static 'Estetica_site/gato5.jpg' %}" alt="Gatinho fofo olhando para cima">
+    </div>
+</section>
+    </main>
+
+
+    <section class="testimonials-section">
+    <div class="section-header">
+        <h2 class="section-title">Histórias em Destaque</h2>
+        <a href="historias.html" class="view-more-link">Ver mais</a>
+    </div>
+
+    <div class="testimonials-grid">
+        <div class="testimonial-card">
+            <div class="testimonial-header">
+            <img src="{% static 'Estetica_site/reencontro.jpg' %}" alt="Foto de Grasielle" class="author-photo">
+                <div class="header-info">
+                    <span class="story-type">Reencontro de Sheila</span>
+                </div>
+            </div>
+            <div class="testimonial-body">
+                <h3 class="author-name">Grasielle</h3>
+                <p class="author-location">Rio de Janeiro - RJ</p>
+                <div class="rating">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+                <p class="testimonial-text">"Depois de anunciar no S.O.S Pets, usei a imagem gerada para fazer cartazes. Três dias depois, escutei minha filha no quintal e era a Sheila! Um final feliz graças à plataforma."</p>
+            </div>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-header">
+                <img src="{% static 'Estetica_site/adocaomax.jpg' %}" alt="Foto de Midori" class="author-photo">
+                <div class="header-info">
+                    <span class="story-type">Adoção do Max</span>
+                </div>
+            </div>
+            <div class="testimonial-body">
+                <h3 class="author-name">Marcos</h3>
+                <p class="author-location">Diadema - SP</p>
+                <div class="rating">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+                <p class="testimonial-text">"O processo de adoção foi super transparente. Encontramos o Max aqui e hoje ele alegra nossa casa. Agradecemos a todos que compartilharam e nos ajudaram a encontrá-lo!"</p>
+            </div>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-header">
+                <img src="{% static 'Estetica_site/caoedona.jpg' %}" alt="Foto de Lucas" class="author-photo">
+                <div class="header-info">
+                    <span class="story-type">Reencontro de Pitty</span>
+                </div>
+            </div>
+            <div class="testimonial-body">
+                <h3 class="author-name">Laura B.</h3>
+                <p class="author-location">Manaus - AM</p>
+                <div class="rating">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+                <p class="testimonial-text">"Uma família estava abrigando a Pitty e viu nosso post no site. Graças ao esforço de todos e à honestidade de quem a encontrou, ela está de volta em casa. Muito obrigado!"</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <section class="why-adopt-section">
+    <div class="section-header">
+        <h2 class="section-title">Por que adotar?</h2>
+    </div>
+
+    <div class="reasons-grid">
+        <div class="reason-card">
+            <img src="{% static 'Estetica_site/brincandocomcachorro.png' %}" alt="Ilustração de uma pessoa abraçando um cachorro" class="reason-illustration">
+            <div class="reason-text">
+                <h3>Nesse exato momento,</h3>
+                <p>existem milhares de doguinhos e gatinhos esperando um humano para chamar de seu.</p>
+            </div>
+        </div>
+
+        <div class="reason-card">
+            <img src="{% static 'Estetica_site/sentadocomogato.png' %}" alt="Ilustração de uma pessoa com um gato no colo" class="reason-illustration">
+            <div class="reason-text">
+                <h3>E não há recompensa maior</h3>
+                <p>do que vê-los se tornando aquela coisinha alegre e saudável depois de uma boa dose de cuidado e carinho.</p>
+            </div>
+        </div>
+
+        <div class="reason-card">
+            <img src="{% static 'Estetica_site/abraçandocachorro.png' %}" alt="Ilustração de uma pessoa segurando um animal com carinho" class="reason-illustration">
+            <div class="reason-text">
+                <h3>Pensando bem, a pergunta é outra:</h3>
+                <p>se você pode mudar o destino de um animal de rua, por que não faria isso?</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <section class="how-it-works-section">
+        <div class="section-header">
+            <h2 class="section-title">Como o SOS Pets funciona?</h2>
+            <p class="section-subtitle">Descubra como podemos ajudar você a encontrar, adotar ou apoiar um animal.</p>
+        </div>
+    
+        <div class="steps-container">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3 class="step-title">Explore os Perfis</h3>
+                <p class="step-description">Navegue em nossa galeria de adoção ou no mural de animais perdidos. Veja fotos e detalhes de cada pet que precisa de ajuda.</p>
+            </div>
+    
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3 class="step-title">Conecte-se</h3>
+                <p class="step-description">Encontrou um pet para adotar? Preencha o formulário de candidatura. Perdeu seu animal? Crie um alerta para a comunidade em segundos.</p>
+            </div>
+    
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3 class="step-title">Faça a Diferença</h3>
+                <p class="step-description">Ao adotar, doar ou compartilhar um alerta, você se torna parte da solução e ajuda a mudar a vida de um animal para sempre.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="features-section">
+        <div class="page-title">
+            <h2>Tudo que você precisa para ajudar</h2>
+            <p>Nossas ferramentas conectam pessoas e animais necessitados.</p>
+        </div>
+    
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h3>Adoção Simplificada</h3>
+                <p>Navegue pelos perfis de animais incríveis que esperam por um lar cheio de amor e carinho.</p>
+            </div>
+    
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>Encontre Pets Perdidos</h3>
+                <p>Use nosso mural para divulgar um animal perdido ou ajudar a encontrar um pet da sua região.</p>
+            </div>
+    
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-hand-holding-heart"></i>
+                </div>
+                <h3>Canal de Doações</h3>
+                <p>Sua contribuição, seja financeira ou com itens, é fundamental para mantermos nosso trabalho vivo.</p>
+            </div>
+    
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Denúncia Segura</h3>
+                <p>Relate casos de maus-tratos de forma segura e anônima. Nós damos o encaminhamento correto.</p>
+            </div>
+        </div>
+    </section>
+    
+    <footer>
+    <div class="footer-left">
+    <img src="{% static 'Estetica_site/logo-sos-pets.png' %}" alt="Logo S.O.S Pets" class="footer-logo-img">
+        <p class="copyright">© 2025 S.O.S Pets</p>
+    </div>
+
+    <div class="footer-center">
+    <a href="/adocao/">Adoção</a>
+    <a href="/arrecadacao/">Arrecadação</a>
+    <a href="/contato/">Contato</a>
+    </div>
+
+    <div class="footer-right">
+        <p>Siga-nos nas redes:</p>
+        <div class="footer-social-icons">
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        </div>
+    </div>
+</footer>
+
+    <!-- Script global antigo mantido se necessário -->
+    <!-- <script src="{% static 'script.js' %}"></script> -->
+    <script src="{% static 'user_session.js' %}" defer></script>
+</body>
+</html>

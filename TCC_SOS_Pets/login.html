@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SOS Pets</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Roboto:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- <script src="script.js" defer></script> -->
+    <!-- Removido o script global para evitar conflitos nesta página de login -->
+    <!-- <script src="{% static 'script.js' %}" defer></script> -->
+    <script src="{% static 'login.js' %}" defer></script>
+
+</head>
+
+<body>
+
+    <div class="site-content">
+        <header>
+            <a href="/" class="header-logo-link">
+                <i class="fas fa-paw"></i>
+                <span class="logo-text">S.O.S Pets</span>
+            </a>
+            <nav>
+                <a href="/adocao/"><i class="fas fa-heart"></i><span>Adoção</span></a>
+                <a href="/arrecadacao/"><i class="fas fa-hand-holding-heart"></i><span>Arrecadação</span></a>
+                <a href="/denuncia/"><i class="fas fa-bullhorn"></i><span>Denúncia</span></a>
+                <a href="/animais-perdidos/"><i class="fas fa-search"></i><span>Pets Perdidos</span></a>
+                <a href="/contato/"><i class="fas fa-envelope"></i><span>Contato</span></a>
+                <a href="/login/"><i class="fas fa-user"></i><span>Login</span></a>
+            </nav>
+        </header>
+
+        <main>
+            <div class="login-container">
+                <form id="login-form" autocomplete="off">
+                    <h2>Entrar na sua conta</h2>
+
+                    <div class="form-group">
+                        <label for="username">Usuário</label>
+                        <input type="text" id="username" name="username" placeholder="seu_usuario" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Senha</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+
+                    <button type="button" id="btn-login" class="btn-submit">Entrar</button>
+
+                    <div class="login-links">
+                        <a href="#">Esqueceu sua senha?</a>
+                        <p>Não tem uma conta? <a href="/registro/">Cadastre-se</a></p>
+                    </div>
+                </form>
+
+                <div class="login-divider">
+                    <span>OU</span>
+                </div>
+
+                <div class="social-login-buttons">
+                    <button class="btn-social btn-google" type="button">
+                        <i class="fab fa-google"></i> Google
+                    </button>
+                    <button class="btn-social btn-facebook" type="button">
+                        <i class="fab fa-facebook-f"></i> Facebook
+                    </button>
+                    <button class="btn-social btn-apple" type="button">
+                        <i class="fab fa-apple"></i> Apple
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <div class="footer-left">
+            <img src="{% static 'Estetica_site/logo-sos-pets.png' %}" alt="Logo S.O.S Pets" class="footer-logo-img">
+            <p class="copyright">© 2025 S.O.S Pets</p>
+        </div>
+
+        <div class="footer-center">
+            <a href="/adocao/">Adoção</a>
+            <a href="/arrecadacao/">Arrecadação</a>
+            <a href="/contato/">Contato</a>
+        </div>
+
+        <div class="footer-right">
+            <p>Siga-nos nas redes:</p>
+            <div class="footer-social-icons">
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+
+    </footer>
+
+</body>
+
+</html>

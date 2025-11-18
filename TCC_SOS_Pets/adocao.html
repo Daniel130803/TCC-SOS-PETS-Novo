@@ -1,0 +1,484 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Início - SOS Pets</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    </head>
+<body>
+
+    <header>
+    <a href="/" class="header-logo-link">
+        <i class="fas fa-paw"></i>
+        <span class="logo-text">S.O.S Pets</span>
+    </a>
+
+    <nav>
+        <a href="/adocao/"><i class="fas fa-heart"></i><span>Adoção</span></a>
+        <a href="/arrecadacao/"><i class="fas fa-hand-holding-heart"></i><span>Arrecadação</span></a>
+        <a href="/denuncia/"><i class="fas fa-bullhorn"></i><span>Denúncia</span></a>
+        <a href="/animais-perdidos/"><i class="fas fa-search"></i><span>Pets Perdidos</span></a>
+        <a href="/contato/"><i class="fas fa-envelope"></i><span>Contato</span></a>
+        <div class="nav-user-area"></div>
+    </nav>
+</header>
+
+    <main>
+        <section class="filter-panel">
+    <form class="new-filter-form">
+        <div class="filter-row">
+            <select name="especie" aria-label="Espécie">
+                <option value="">Todas as Espécies</option>
+                <option value="cao">Cães</option>
+                <option value="gato">Gatos</option>
+            </select>
+            <select name="porte" aria-label="Porte">
+                <option value="">Todos os Portes</option>
+                <option value="pequeno">Pequeno</option>
+                <option value="medio">Médio</option>
+                <option value="grande">Grande</option>
+            </select>
+            <select id="estado-select" name="estado" aria-label="Estado">
+                <option value="">Todos os Estados</option>
+                </select>
+            <select id="cidade-select" name="cidade" aria-label="Cidade" disabled>
+                <option value="">Escolha um estado</option>
+            </select>
+        </div>
+        <div class="filter-row">
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" name="nome-pet" placeholder="Busque por um nome específico...">
+            </div>
+            <button type="submit" class="btn-submit">Buscar</button>
+        </div>
+    </form>
+</section>
+
+<div class="page-title">
+    <h2>Conheça seu novo melhor amigo!</h2>
+</div>
+
+<div class="galeria-adocao">
+
+    <div class="animal-card" data-especie="cao" data-nome="abelly" data-sexo="femea" data-porte="pequeno" data-estado="SP" data-cidade="sao-paulo">
+        <div class="card-image-container">
+            <img src="https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Cachorro Abelly">
+        </div>
+        <div class="card-content">
+            <div class="card-header">
+                <h4>Abelly</h4>
+                <div class="card-icons"><i class="fas fa-venus" title="Fêmea"></i></div>
+            </div>
+            <p class="location">São Paulo, SP</p>
+            <div class="details-hidden">
+                 <span>Cão</span><span>Pequeno</span>
+            </div>
+            <a href="formulario-adocao.html?pet=Abelly" class="card-button">Quero adotar</a>
+        </div>
+    </div>
+    
+    <div class="animal-card" data-especie="gato" data-nome="aglaia" data-sexo="femea" data-porte="pequeno" data-estado="RJ" data-cidade="rio-de-janeiro">
+        <div class="card-image-container">
+            <img src="https://images.pexels.com/photos/208773/pexels-photo-208773.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Gato Aglaia">
+        </div>
+        <div class="card-content">
+            <div class="card-header">
+                <h4>Aglaia</h4>
+                <div class="card-icons"><i class="fas fa-venus" title="Fêmea"></i></div>
+            </div>
+            <p class="location">Rio de Janeiro, RJ</p>
+            <div class="details-hidden">
+                 <span>Gato</span><span>Pequeno</span>
+            </div>
+            <a href="formulario-adocao.html?pet=Aglaia" class="card-button">Quero adotar</a>
+        </div>
+    </div>
+    
+    <div class="animal-card" data-especie="cao" data-nome="alordy" data-sexo="macho" data-porte="medio" data-estado="MG" data-cidade="belo-horizonte">
+        <div class="card-image-container">
+            <div class="galeria-adocao" id="galeria-adocao">
+                <div id="no-results-message" style="display: none; grid-column: 1 / -1; text-align: center;">
+                    <h3>Nenhum animal encontrado</h3>
+                    <p>Tente ajustar os filtros para encontrar mais amigos.</p>
+                </div>
+            </div>
+            <div class="details-hidden">
+                 <span>Cão</span><span>Médio</span>
+            </div>
+            <a href="formulario-adocao.html?pet=Alordy" class="card-button">Quero adotar</a>
+        </div>
+    </div>
+    
+    <div class="animal-card" data-especie="cao" data-nome="apolo" data-sexo="macho" data-porte="grande" data-estado="SP" data-cidade="sao-joaquim-da-barra">
+        <div class="card-image-container">
+            <img src="https://images.pexels.com/photos/3726315/pexels-photo-3726315.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Cachorro Apolo">
+        </div>
+        <div class="card-content">
+            <div class="card-header">
+                <h4>Apolo</h4>
+                <div class="card-icons"><i class="fas fa-mars" title="Macho"></i></div>
+            </div>
+            <p class="location">São Joaquim da Barra, SP</p>
+            <div class="details-hidden">
+                 <span>Cão</span><span>Grande</span>
+            </div>
+            <a href="formulario-adocao.html?pet=Apolo" class="card-button">Quero adotar</a>
+        </div>
+    </div>
+
+    <div class="animal-card" data-especie="cao" data-nome="abelly" data-sexo="femea" data-porte="pequeno" data-estado="SP" data-cidade="sao-paulo">
+        <div class="card-image-container">
+            <img src="https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Cachorro Abelly">
+        </div>
+        <div class="card-content">
+            <div class="card-header">
+                <h4>Abelly</h4>
+                <div class="card-icons"><i class="fas fa-venus" title="Fêmea"></i></div>
+            </div>
+            <p class="location">São Paulo, SP</p>
+            <div class="details-hidden">
+                 <span>Cão</span><span>Pequeno</span>
+            </div>
+            <a href="formulario-adocao.html?pet=Abelly" class="card-button">Quero adotar</a>
+        </div>
+    </div>
+    
+    <div class="animal-card" data-especie="gato" data-nome="aglaia" data-sexo="femea" data-porte="pequeno" data-estado="RJ" data-cidade="rio-de-janeiro">
+        <div class="card-image-container">
+            <img src="https://images.pexels.com/photos/208773/pexels-photo-208773.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Gato Aglaia">
+        </div>
+        <div class="card-content">
+            <div class="card-header">
+                <h4>Aglaia</h4>
+                <div class="card-icons"><i class="fas fa-venus" title="Fêmea"></i></div>
+            </div>
+            <p class="location">Rio de Janeiro, RJ</p>
+            <div class="details-hidden">
+                 <span>Gato</span><span>Pequeno</span>
+            </div>
+            <a href="formulario-adocao.html?pet=Aglaia" class="card-button">Quero adotar</a>
+        </div>
+    </div>
+    
+    <div class="animal-card" data-especie="cao" data-nome="alordy" data-sexo="macho" data-porte="medio" data-estado="MG" data-cidade="belo-horizonte">
+        <div class="card-image-container">
+            <img src="https://images.pexels.com/photos/57497/pexels-photo-57497.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Cachorro Alordy">
+        </div>
+        <div class="card-content">
+            <div class="card-header">
+                <h4>Alordy</h4>
+                <div class="card-icons"><i class="fas fa-mars" title="Macho"></i></div>
+            </div>
+            <p class="location">Belo Horizonte, MG</p>
+            <div class="details-hidden">
+                 <span>Cão</span><span>Médio</span>
+            </div>
+            <a href="formulario-adocao.html?pet=Alordy" class="card-button">Quero adotar</a>
+        </div>
+    </div>
+    
+    <div class="animal-card" data-especie="cao" data-nome="apolo" data-sexo="macho" data-porte="grande" data-estado="SP" data-cidade="sao-joaquim-da-barra">
+        <div class="card-image-container">
+            <img src="https://images.pexels.com/photos/3726315/pexels-photo-3726315.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Cachorro Apolo">
+        </div>
+        <div class="card-content">
+            <div class="card-header">
+                <h4>Apolo</h4>
+                <div class="card-icons"><i class="fas fa-mars" title="Macho"></i></div>
+            </div>
+            <p class="location">São Joaquim da Barra, SP</p>
+            <div class="details-hidden">
+                 <span>Cão</span><span>Grande</span>
+            </div>
+            <a href="formulario-adocao.html?pet=Apolo" class="card-button">Quero adotar</a>
+        </div>
+    </div>
+
+    <div class="animal-card" data-especie="cao" data-nome="abelly" data-sexo="femea" data-porte="pequeno" data-estado="SP" data-cidade="sao-paulo">
+        <div class="card-image-container">
+            <img src="https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Cachorro Abelly">
+        </div>
+        <div class="card-content">
+            <div class="card-header">
+                <h4>Abelly</h4>
+                <div class="card-icons"><i class="fas fa-venus" title="Fêmea"></i></div>
+            </div>
+            <p class="location">São Paulo, SP</p>
+            <div class="details-hidden">
+                 <span>Cão</span><span>Pequeno</span>
+            </div>
+            <a href="formulario-adocao.html?pet=Abelly" class="card-button">Quero adotar</a>
+        </div>
+    </div>
+    
+    <div class="animal-card" data-especie="gato" data-nome="aglaia" data-sexo="femea" data-porte="pequeno" data-estado="RJ" data-cidade="rio-de-janeiro">
+        <div class="card-image-container">
+            <img src="https://images.pexels.com/photos/208773/pexels-photo-208773.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Gato Aglaia">
+        </div>
+        <div class="card-content">
+            <div class="card-header">
+                <h4>Aglaia</h4>
+                <div class="card-icons"><i class="fas fa-venus" title="Fêmea"></i></div>
+            </div>
+            <p class="location">Rio de Janeiro, RJ</p>
+            <div class="details-hidden">
+                 <span>Gato</span><span>Pequeno</span>
+            </div>
+            <a href="formulario-adocao.html?pet=Aglaia" class="card-button">Quero adotar</a>
+        </div>
+    </div>
+    
+    <div class="animal-card" data-especie="cao" data-nome="alordy" data-sexo="macho" data-porte="medio" data-estado="MG" data-cidade="belo-horizonte">
+        <div class="card-image-container">
+            <img src="https://images.pexels.com/photos/57497/pexels-photo-57497.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Cachorro Alordy">
+        </div>
+        <div class="card-content">
+            <div class="card-header">
+                <h4>Alordy</h4>
+                <div class="card-icons"><i class="fas fa-mars" title="Macho"></i></div>
+            </div>
+            <p class="location">Belo Horizonte, MG</p>
+            <div class="details-hidden">
+                 <span>Cão</span><span>Médio</span>
+            </div>
+            <a href="formulario-adocao.html?pet=Alordy" class="card-button">Quero adotar</a>
+        </div>
+    </div>
+    
+    <div class="animal-card" data-especie="cao" data-nome="apolo" data-sexo="macho" data-porte="grande" data-estado="SP" data-cidade="sao-joaquim-da-barra">
+        <div class="card-image-container">
+            <img src="https://images.pexels.com/photos/3726315/pexels-photo-3726315.jpeg?auto=compress&cs=tinysrgb&w=400" alt="Cachorro Apolo">
+        </div>
+        <div class="card-content">
+            <div class="card-header">
+                <h4>Apolo</h4>
+                <div class="card-icons"><i class="fas fa-mars" title="Macho"></i></div>
+            </div>
+            <p class="location">São Joaquim da Barra, SP</p>
+            <div class="details-hidden">
+                 <span>Cão</span><span>Grande</span>
+            </div>
+            <a href="formulario-adocao.html?pet=Apolo" class="card-button">Quero adotar</a>
+        </div>
+    </div>
+    
+    <div id="no-results-message" style="display: none; grid-column: 1 / -1; text-align: center;">
+        <h3>Nenhum animal encontrado</h3>
+        <p>Tente ajustar os filtros para encontrar mais amigos.</p>
+    </div>
+
+    </div>
+
+    </main>
+    
+    <footer>
+    <div class="footer-left">
+        <img src="{% static 'Estetica_site/logo-sos-pets.png' %}" alt="Logo S.O.S Pets" class="footer-logo-img">
+        <p class="copyright">© 2025 S.O.S Pets</p>
+    </div>
+
+    <div class="footer-center">
+    <a href="/adocao/">Adoção</a>
+    <a href="/arrecadacao/">Arrecadação</a>
+    <a href="/contato/">Contato</a>
+    </div>
+
+    <div class="footer-right">
+        <p>Siga-nos nas redes:</p>
+        <div class="footer-social-icons">
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        </div>
+    </div>
+</footer>
+    <!-- Removido script.js legado para evitar conflitos, se necessário usar funcionalidades globais converta para static -->
+    <!-- <script src="{% static 'script.js' %}"></script> -->
+    <script>
+    (function(){
+        const API_BASE = '/api/animais/';
+        const form = document.querySelector('.new-filter-form');
+        const galeria = document.getElementById('galeria-adocao');
+        const noResults = document.getElementById('no-results-message');
+        const estadoSelect = document.getElementById('estado-select');
+        const cidadeSelect = document.getElementById('cidade-select');
+
+        // Corrige markup legado: move galeria dinâmica para dentro do contêiner principal e remove cards estáticos
+        const outerGallery = document.querySelector('div.galeria-adocao');
+        const innerGallery = document.getElementById('galeria-adocao');
+        if (outerGallery && innerGallery && innerGallery.parentElement !== outerGallery){
+            // Remove cards estáticos do contêiner externo
+            outerGallery.innerHTML = '';
+            outerGallery.appendChild(innerGallery);
+        }
+        if (outerGallery){
+            outerGallery.querySelectorAll(':scope > .animal-card').forEach(el => el.remove());
+        }
+
+        // Estados BR básicos (UF)
+        const UFS = ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO'];
+        UFS.forEach(uf => {
+            const opt = document.createElement('option');
+            opt.value = uf; opt.textContent = uf;
+            estadoSelect.appendChild(opt);
+        });
+        // Garante que os filtros iniciem "em branco"
+        form.querySelector('[name="especie"]').value = '';
+        form.querySelector('[name="porte"]').value = '';
+        estadoSelect.value = '';
+        cidadeSelect.disabled = true;
+        cidadeSelect.innerHTML = '<option value="">Escolha um estado</option>';
+
+        async function carregarCidadesPorUF(uf){
+            cidadeSelect.disabled = true;
+            cidadeSelect.innerHTML = '<option value="">Carregando...</option>';
+            try{
+                const url = `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${encodeURIComponent(uf)}/municipios?orderBy=nome`;
+                const res = await fetch(url);
+                if(!res.ok) throw new Error('Falha ao carregar cidades');
+                const lista = await res.json();
+                cidadeSelect.innerHTML = '<option value="">Todas as Cidades</option>';
+                for(const c of lista){
+                    const opt = document.createElement('option');
+                    opt.value = c.nome;
+                    opt.textContent = c.nome;
+                    cidadeSelect.appendChild(opt);
+                }
+            }catch(e){
+                console.warn('Erro ao buscar cidades do IBGE:', e);
+                cidadeSelect.innerHTML = '<option value="">Todas as Cidades</option>';
+            }finally{
+                cidadeSelect.disabled = !uf;
+            }
+        }
+
+        estadoSelect.addEventListener('change', async () => {
+            const uf = estadoSelect.value;
+            if(uf){
+                await carregarCidadesPorUF(uf);
+            } else {
+                cidadeSelect.disabled = true;
+                cidadeSelect.innerHTML = '<option value="">Escolha um estado</option>';
+            }
+            // auto-aplicar filtro ao mudar UF
+            applyFiltersFromForm();
+        });
+
+        function mapEspecieToTipo(especie){
+            if(!especie) return '';
+            return especie === 'cao' ? 'cachorro' : especie;
+        }
+
+        function sexoIcon(sexo){
+            if(!sexo) return '';
+            return sexo.toLowerCase() === 'femea' ? '<i class="fas fa-venus" title="Fêmea"></i>' : '<i class="fas fa-mars" title="Macho"></i>';
+        }
+
+        function tipoLabel(tipo){
+            if(tipo === 'cachorro') return 'Cão';
+            if(tipo === 'gato') return 'Gato';
+            return tipo || '';
+        }
+
+        function porteLabel(porte){
+            if(!porte) return '';
+            const map = { pequeno: 'Pequeno', medio: 'Médio', grande: 'Grande' };
+            return map[porte] || porte;
+        }
+
+        function cardTemplate(animal){
+            const img = animal.imagem_absolute || animal.imagem_url || 'https://placehold.co/400x300?text=SOS+Pets';
+            const loc = [animal.cidade, animal.estado].filter(Boolean).join(', ');
+            const sexo = sexoIcon(animal.sexo || '');
+            const tipo = tipoLabel(animal.tipo);
+            const porte = porteLabel(animal.porte);
+            const detalhes = [tipo, porte].filter(Boolean).map(v => `<span>${v}</span>`).join('');
+            const href = `/formulario-adocao/?pet=${encodeURIComponent(animal.nome)}`;
+            return `
+            <div class="animal-card">
+                <div class="card-image-container">
+                    <img src="${img}" alt="${tipo} ${animal.nome}">
+                </div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <h4>${animal.nome}</h4>
+                        <div class="card-icons">${sexo}</div>
+                    </div>
+                    <p class="location">${loc}</p>
+                    <div class="details-hidden">${detalhes}</div>
+                    <a href="${href}" class="card-button">Quero adotar</a>
+                </div>
+            </div>`;
+        }
+
+        async function fetchAnimais(params={}){
+            const url = new URL(API_BASE, window.location.origin);
+            Object.entries(params).forEach(([k,v]) => { if(v) url.searchParams.set(k, v); });
+            const res = await fetch(url.toString());
+            if(!res.ok) throw new Error('Falha ao carregar animais');
+            return res.json();
+        }
+
+        function renderLista(lista){
+            // Remove tudo menos o noResults (mantém no DOM para reuso)
+            ;[...galeria.querySelectorAll('.animal-card')].forEach(el => el.remove());
+            if(!lista || lista.length === 0){
+                noResults.style.display = 'block';
+                return;
+            }
+            noResults.style.display = 'none';
+            const html = lista.map(cardTemplate).join('');
+            galeria.insertAdjacentHTML('afterbegin', html);
+        }
+
+        async function applyFiltersFromForm(ev){
+            if(ev) ev.preventDefault();
+            // Esconde placeholder antes da busca
+            noResults.style.display = 'none';
+            const fd = new FormData(form);
+            const params = {
+                tipo: mapEspecieToTipo(fd.get('especie') || ''),
+                porte: fd.get('porte') || '',
+                estado: fd.get('estado') || '',
+                cidade: fd.get('cidade') || '',
+                nome: fd.get('nome-pet') || ''
+            };
+            try{
+                const data = await fetchAnimais(params);
+                renderLista(data);
+            }catch(err){
+                console.error(err);
+                renderLista([]);
+            }
+        }
+
+        // Debounce para evitar requisições excessivas ao trocar filtros
+        function debounce(fn, wait=300){
+            let t; return function(...args){
+                clearTimeout(t); t = setTimeout(() => fn.apply(this, args), wait);
+            };
+        }
+
+        const applyDebounced = debounce(applyFiltersFromForm, 250);
+
+        form.addEventListener('submit', applyFiltersFromForm);
+        form.querySelector('[name="especie"]').addEventListener('change', applyFiltersFromForm);
+        form.querySelector('[name="porte"]').addEventListener('change', applyFiltersFromForm);
+        cidadeSelect.addEventListener('change', applyFiltersFromForm);
+        const nomeInput = form.querySelector('[name="nome-pet"]');
+        nomeInput.addEventListener('input', applyDebounced);
+
+        // Carregamento inicial: sem filtros (mostra disponíveis)
+        applyFiltersFromForm();
+    })();
+    </script>
+    <script src="{% static 'user_session.js' %}" defer></script>
+</body>
+</html>
