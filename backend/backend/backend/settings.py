@@ -163,7 +163,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # adicionar no final do arquivo ou onde preferir
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / '..' / '..' / 'media'  # ajusta para pasta na raiz do repo
+MEDIA_ROOT = BASE_DIR / 'media'  # Dentro do diretório do app no Docker
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [

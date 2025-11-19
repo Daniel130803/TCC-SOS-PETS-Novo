@@ -15,6 +15,12 @@ echo "✅ Database is ready!"
 echo "🔄 Running migrations..."
 python manage.py migrate --noinput
 
+# Cria diretórios de mídia com permissões corretas
+echo "📁 Creating media directories..."
+mkdir -p media/denuncias media/animais
+chmod -R 777 media
+echo "✅ Media directories ready!"
+
 # Coleta arquivos estáticos (se não for dev)
 if [ "$DJANGO_ENV" != "dev" ]; then
   echo "📦 Collecting static files..."
