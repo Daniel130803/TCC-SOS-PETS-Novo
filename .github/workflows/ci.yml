@@ -61,8 +61,6 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_DATABASE: test_sos_pets
-          MYSQL_USER: test_user
-          MYSQL_PASSWORD: test_password
           MYSQL_ROOT_PASSWORD: root_password
         ports:
           - 3306:3306
@@ -86,7 +84,7 @@ jobs:
     - name: 📦 Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y default-libmysqlclient-dev pkg-config
+        sudo apt-get install -y default-libmysqlclient-dev pkg-config mysql-client
 
     - name: 📦 Install Python dependencies
       run: |
@@ -104,13 +102,20 @@ jobs:
         DJANGO_ENV=dev
         DB_ENGINE=mysql
         DB_NAME=test_sos_pets
-        DB_USER=test_user
-        DB_PASSWORD=test_password
+        DB_USER=root
+        DB_PASSWORD=root_password
         DB_HOST=127.0.0.1
         DB_PORT=3306
         ALLOWED_HOSTS=localhost,127.0.0.1
         CORS_ALLOW_ALL_ORIGINS=True
         EOF
+
+    - name: ⏳ Wait for MySQL to be ready
+      run: |
+        for i in {1..30}; do
+          if mysql -h 127.0.0.1 -uroot -proot_password -e "SELECT 1" >/dev/null 2>&1; then
+            echo "MySQL is up!"; break; fi; echo "Waiting for MySQL..."; sleep 2; done
+        mysql -h 127.0.0.1 -uroot -proot_password -e "SHOW DATABASES;"
 
     - name: 🔄 Run migrations
       run: |

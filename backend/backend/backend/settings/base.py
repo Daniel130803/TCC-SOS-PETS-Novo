@@ -141,7 +141,12 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=int(os.getenv('REFRESH_DAYS', '7'))),
 }
 
-# Logging estruturado (JSON)
+# Logging estruturado (JSON) com opção de log em arquivo
+LOG_TO_FILE = os.getenv('LOG_TO_FILE', 'False').lower() == 'true'
+LOGS_DIR = BASE_DIR / 'logs'
+if LOG_TO_FILE:
+    os.makedirs(LOGS_DIR, exist_ok=True)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -160,13 +165,6 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'json' if os.getenv('DJANGO_ENV') == 'prod' else 'verbose',
         },
-        'file': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'django.log',
-            'maxBytes': 10485760,  # 10MB
-            'backupCount': 5,
-            'formatter': 'json',
-        },
     },
     'root': {
         'level': os.getenv('LOG_LEVEL', 'INFO'),
@@ -183,13 +181,27 @@ LOGGING = {
             'level': 'WARNING',
             'propagate': False,
         },
-        'core': {  # logs da sua app
+        'core': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False,
         },
     },
 }
+
+if LOG_TO_FILE:
+    LOGGING['handlers']['file'] = {
+        'class': 'logging.handlers.RotatingFileHandler',
+        'filename': str(LOGS_DIR / 'django.log'),
+        'maxBytes': 10485760,  # 10MB
+        'backupCount': 5,
+        'formatter': 'json',
+    }
+    # adiciona handler de arquivo aos loggers principais
+    LOGGING['root']['handlers'].append('file')
+    LOGGING['loggers']['django']['handlers'].append('file')
+    LOGGING['loggers']['django.request']['handlers'].append('file')
+    LOGGING['loggers']['core']['handlers'].append('file')
 
 # Sentry (monitoramento de erros em produção)
 SENTRY_DSN = os.getenv('SENTRY_DSN', '')
