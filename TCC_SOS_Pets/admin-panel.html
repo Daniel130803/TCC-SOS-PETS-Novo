@@ -12,6 +12,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
+        body {
+            background: linear-gradient(to bottom, #ffffff, #e8f5e9);
+            background-attachment: fixed;
+        }
+
         .admin-container {
             max-width: 1400px;
             margin: 100px auto 40px;
@@ -19,17 +24,23 @@
         }
 
         .admin-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             color: white;
             padding: 30px;
             border-radius: 15px;
             margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
         }
 
         .admin-header h1 {
             margin: 0;
             font-size: 2em;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .admin-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.95;
         }
 
         .admin-tabs {
@@ -51,6 +62,7 @@
             color: #666;
             transition: all 0.3s;
             position: relative;
+            font-family: 'Poppins', sans-serif;
         }
 
         .admin-tab:hover {
@@ -59,7 +71,7 @@
         }
 
         .admin-tab.active {
-            background: #667eea;
+            background: #4CAF50;
             color: white;
         }
 
@@ -97,6 +109,7 @@
             padding: 25px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             transition: all 0.3s;
+            border: 1px solid #eee;
         }
 
         .item-card:hover {
@@ -116,6 +129,7 @@
             font-weight: 700;
             color: #333;
             margin: 0;
+            font-family: 'Poppins', sans-serif;
         }
 
         .status-badge {
@@ -127,28 +141,28 @@
         }
 
         .status-pendente {
-            background: #ffeaa7;
-            color: #d63031;
+            background: #fff3cd;
+            color: #856404;
         }
 
         .status-aprovada {
-            background: #55efc4;
-            color: #00b894;
+            background: #d4edda;
+            color: #155724;
         }
 
         .status-em_andamento {
-            background: #74b9ff;
-            color: #0984e3;
+            background: #d1ecf1;
+            color: #0c5460;
         }
 
         .status-resolvida {
-            background: #a29bfe;
-            color: #6c5ce7;
+            background: #e2e3e5;
+            color: #383d41;
         }
 
         .status-rejeitada {
-            background: #ff7675;
-            color: #d63031;
+            background: #f8d7da;
+            color: #721c24;
         }
 
         .item-details {
@@ -189,55 +203,56 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            font-family: 'Roboto', sans-serif;
         }
 
         .btn-aprovar {
-            background: #00b894;
+            background: #4CAF50;
             color: white;
         }
 
         .btn-aprovar:hover {
-            background: #00a383;
+            background: #45a049;
             transform: scale(1.05);
         }
 
         .btn-rejeitar {
-            background: #d63031;
+            background: #f44336;
             color: white;
         }
 
         .btn-rejeitar:hover {
-            background: #c72828;
+            background: #da190b;
             transform: scale(1.05);
         }
 
         .btn-em-andamento {
-            background: #0984e3;
+            background: #2196F3;
             color: white;
         }
 
         .btn-em-andamento:hover {
-            background: #0770c7;
+            background: #0b7dda;
             transform: scale(1.05);
         }
 
         .btn-resolver {
-            background: #6c5ce7;
+            background: #9C27B0;
             color: white;
         }
 
         .btn-resolver:hover {
-            background: #5f4dd1;
+            background: #7b1fa2;
             transform: scale(1.05);
         }
 
         .btn-ver-detalhes {
-            background: #636e72;
+            background: #757575;
             color: white;
         }
 
         .btn-ver-detalhes:hover {
-            background: #505659;
+            background: #616161;
             transform: scale(1.05);
         }
 
@@ -245,12 +260,16 @@
             text-align: center;
             padding: 60px 20px;
             color: #999;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
         .empty-state i {
             font-size: 4em;
             margin-bottom: 20px;
             opacity: 0.3;
+            color: #4CAF50;
         }
 
         .loading {
@@ -258,10 +277,14 @@
             padding: 40px;
             font-size: 1.2em;
             color: #666;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
         .loading i {
             animation: spin 1s linear infinite;
+            color: #4CAF50;
         }
 
         @keyframes spin {
@@ -274,6 +297,7 @@
             object-fit: cover;
             border-radius: 10px;
             margin: 15px 0;
+            border: 1px solid #eee;
         }
 
         .observacoes-input {
@@ -282,9 +306,16 @@
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             margin: 10px 0;
-            font-family: inherit;
+            font-family: 'Roboto', sans-serif;
             resize: vertical;
             min-height: 60px;
+            box-sizing: border-box;
+        }
+
+        .observacoes-input:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
         }
 
         .stats-cards {
@@ -300,18 +331,30 @@
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             text-align: center;
+            border: 1px solid #eee;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
 
         .stat-number {
             font-size: 2.5em;
             font-weight: 700;
-            color: #667eea;
+            color: #4CAF50;
             margin: 10px 0;
+            font-family: 'Poppins', sans-serif;
         }
 
         .stat-label {
             color: #666;
             font-size: 0.9em;
+        }
+
+        .stat-card i {
+            opacity: 0.8;
         }
     </style>
 </head>
@@ -411,12 +454,93 @@
             });
         });
 
+        // Verificar se o usuário é admin
+        async function checkAdminAccess() {
+            const token = localStorage.getItem('access');
+            if (!token) {
+                showAccessDenied('Você precisa estar logado como administrador.');
+                return false;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/me/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) {
+                    showAccessDenied('Você precisa estar logado como administrador.');
+                    return false;
+                }
+                
+                const userData = await response.json();
+                
+                if (!userData.is_staff) {
+                    showAccessDenied('Você precisa estar logado como administrador.');
+                    return false;
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Erro ao verificar acesso:', error);
+                showAccessDenied('Erro ao verificar permissões. Tente novamente.');
+                return false;
+            }
+        }
+
+        function showAccessDenied(message) {
+            // Cria modal de acesso negado
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 40px;
+                    border-radius: 15px;
+                    text-align: center;
+                    max-width: 400px;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                ">
+                    <div style="font-size: 4em; color: #d63031; margin-bottom: 20px;">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <h2 style="color: #333; margin-bottom: 15px; font-size: 1.5em;">LOCALHOST:8000 DIZ</h2>
+                    <p style="color: #666; margin-bottom: 30px; font-size: 1.1em;">${message}</p>
+                    <button onclick="window.location.href='/login/'" style="
+                        background: #d63031;
+                        color: white;
+                        border: none;
+                        padding: 12px 30px;
+                        border-radius: 8px;
+                        font-size: 1em;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                    " onmouseover="this.style.background='#c72828'" onmouseout="this.style.background='#d63031'">
+                        OK
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
         // Carregar dados ao iniciar
         async function init() {
-            const token = localStorage.getItem('access_token');
-            if (!token) {
-                alert('Você precisa estar logado como administrador.');
-                window.location.href = '/login/';
+            // Verifica acesso de admin primeiro
+            const hasAccess = await checkAdminAccess();
+            if (!hasAccess) {
                 return;
             }
 
@@ -440,7 +564,7 @@
 
         async function loadDenuncias() {
             const grid = document.getElementById('denuncias-grid');
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('access');
             
             try {
                 const response = await fetch(`${API_BASE}/denuncias/`, {
@@ -505,7 +629,7 @@
 
         async function loadAdocoes() {
             const grid = document.getElementById('adocoes-grid');
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('access');
             
             try {
                 const response = await fetch(`${API_BASE}/adocoes/`, {
@@ -561,7 +685,7 @@
         }
 
         async function moderarDenuncia(id, acao) {
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('access');
             const obs = document.getElementById(`obs-denuncia-${id}`)?.value || '';
             
             try {
@@ -587,7 +711,7 @@
         }
 
         async function moderarAdocao(id, novoStatus) {
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('access');
             
             try {
                 const response = await fetch(`${API_BASE}/adocoes/${id}/`, {
@@ -612,7 +736,7 @@
         }
 
         async function updateStats() {
-            const token = localStorage.getItem('access_token');
+            const token = localStorage.getItem('access');
             
             try {
                 // Denúncias pendentes
