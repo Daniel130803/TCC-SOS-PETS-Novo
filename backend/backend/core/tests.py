@@ -16,6 +16,10 @@ class AnimaisApiTests(TestCase):
 		resp = self.client.get('/api/animais/')
 		self.assertEqual(resp.status_code, 200)
 		data = resp.json()
+		# A API agora usa paginação padrão do DRF.
+		# Quando paginado, a resposta é um dict com a chave "results".
+		if isinstance(data, dict) and 'results' in data:
+			data = data['results']
 		nomes = {a['nome'] for a in data}
 		self.assertIn('Rex', nomes)
 		self.assertIn('Mia', nomes)
@@ -25,5 +29,7 @@ class AnimaisApiTests(TestCase):
 		resp = self.client.get('/api/animais/', {'tipo': 'gato', 'nome': 'mi'})
 		self.assertEqual(resp.status_code, 200)
 		data = resp.json()
+		if isinstance(data, dict) and 'results' in data:
+			data = data['results']
 		self.assertEqual(len(data), 1)
 		self.assertEqual(data[0]['nome'], 'Mia')
