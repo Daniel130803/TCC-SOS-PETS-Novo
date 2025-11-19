@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Garante LF em scripts shell (evita \r\n dentro do container)
+*.sh text eol=lf
