@@ -1,0 +1,659 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - S.O.S Pets</title>
+    <link rel="icon" type="image/png" href="{% static 'Estetica_site/Logo.png' %}">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 100px auto 40px;
+            padding: 20px;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .admin-header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .admin-tab {
+            padding: 15px 30px;
+            background: white;
+            border: none;
+            border-radius: 10px 10px 0 0;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .admin-tab:hover {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .admin-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .admin-tab .badge {
+            background: #ff4757;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-left: 8px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .items-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .item-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .item-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+
+        .status-badge {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pendente {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .status-aprovada {
+            background: #55efc4;
+            color: #00b894;
+        }
+
+        .status-em_andamento {
+            background: #74b9ff;
+            color: #0984e3;
+        }
+
+        .status-resolvida {
+            background: #a29bfe;
+            color: #6c5ce7;
+        }
+
+        .status-rejeitada {
+            background: #ff7675;
+            color: #d63031;
+        }
+
+        .item-details {
+            margin: 15px 0;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .item-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        .item-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-aprovar {
+            background: #00b894;
+            color: white;
+        }
+
+        .btn-aprovar:hover {
+            background: #00a383;
+            transform: scale(1.05);
+        }
+
+        .btn-rejeitar {
+            background: #d63031;
+            color: white;
+        }
+
+        .btn-rejeitar:hover {
+            background: #c72828;
+            transform: scale(1.05);
+        }
+
+        .btn-em-andamento {
+            background: #0984e3;
+            color: white;
+        }
+
+        .btn-em-andamento:hover {
+            background: #0770c7;
+            transform: scale(1.05);
+        }
+
+        .btn-resolver {
+            background: #6c5ce7;
+            color: white;
+        }
+
+        .btn-resolver:hover {
+            background: #5f4dd1;
+            transform: scale(1.05);
+        }
+
+        .btn-ver-detalhes {
+            background: #636e72;
+            color: white;
+        }
+
+        .btn-ver-detalhes:hover {
+            background: #505659;
+            transform: scale(1.05);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .item-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .observacoes-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="header-logo-link">
+            <i class="fas fa-paw"></i>
+            <span class="logo-text">S.O.S Pets</span>
+        </a>
+        <nav>
+            <a href="/adocao/"><i class="fas fa-heart"></i><span>Adoção</span></a>
+            <a href="/arrecadacao/"><i class="fas fa-hand-holding-heart"></i><span>Arrecadação</span></a>
+            <a href="/denuncia/"><i class="fas fa-bullhorn"></i><span>Denúncia</span></a>
+            <a href="/animais-perdidos/"><i class="fas fa-search"></i><span>Pets Perdidos</span></a>
+            <a href="/contato/"><i class="fas fa-envelope"></i><span>Contato</span></a>
+            <div class="nav-user-area"></div>
+        </nav>
+    </header>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1><i class="fas fa-shield-alt"></i> Painel Administrativo</h1>
+            <p>Gerencie denúncias, adoções e mensagens de contato</p>
+        </div>
+
+        <div class="stats-cards">
+            <div class="stat-card">
+                <i class="fas fa-bullhorn" style="font-size: 2em; color: #d63031;"></i>
+                <div class="stat-number" id="stat-denuncias">0</div>
+                <div class="stat-label">Denúncias Pendentes</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-heart" style="font-size: 2em; color: #00b894;"></i>
+                <div class="stat-number" id="stat-adocoes">0</div>
+                <div class="stat-label">Adoções Pendentes</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-envelope" style="font-size: 2em; color: #0984e3;"></i>
+                <div class="stat-number" id="stat-contatos">0</div>
+                <div class="stat-label">Contatos Não Lidos</div>
+            </div>
+        </div>
+
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-tab="denuncias">
+                <i class="fas fa-bullhorn"></i> Denúncias
+                <span class="badge" id="badge-denuncias">0</span>
+            </button>
+            <button class="admin-tab" data-tab="adocoes">
+                <i class="fas fa-heart"></i> Adoções
+                <span class="badge" id="badge-adocoes">0</span>
+            </button>
+            <button class="admin-tab" data-tab="contatos">
+                <i class="fas fa-envelope"></i> Contatos
+                <span class="badge" id="badge-contatos">0</span>
+            </button>
+        </div>
+
+        <div id="denuncias-tab" class="tab-content active">
+            <div class="loading">
+                <i class="fas fa-spinner"></i> Carregando denúncias...
+            </div>
+            <div class="items-grid" id="denuncias-grid"></div>
+        </div>
+
+        <div id="adocoes-tab" class="tab-content">
+            <div class="loading">
+                <i class="fas fa-spinner"></i> Carregando adoções...
+            </div>
+            <div class="items-grid" id="adocoes-grid"></div>
+        </div>
+
+        <div id="contatos-tab" class="tab-content">
+            <div class="loading">
+                <i class="fas fa-spinner"></i> Carregando contatos...
+            </div>
+            <div class="items-grid" id="contatos-grid"></div>
+        </div>
+    </div>
+
+    <script src="{% static 'user_session.js' %}"></script>
+    <script>
+        const API_BASE = 'http://localhost:8000/api';
+
+        // Gerenciamento de tabs
+        document.querySelectorAll('.admin-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                
+                document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+                
+                loadTabData(tabName);
+            });
+        });
+
+        // Carregar dados ao iniciar
+        async function init() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                alert('Você precisa estar logado como administrador.');
+                window.location.href = '/login/';
+                return;
+            }
+
+            await loadTabData('denuncias');
+            updateStats();
+        }
+
+        async function loadTabData(tab) {
+            switch(tab) {
+                case 'denuncias':
+                    await loadDenuncias();
+                    break;
+                case 'adocoes':
+                    await loadAdocoes();
+                    break;
+                case 'contatos':
+                    await loadContatos();
+                    break;
+            }
+        }
+
+        async function loadDenuncias() {
+            const grid = document.getElementById('denuncias-grid');
+            const token = localStorage.getItem('access_token');
+            
+            try {
+                const response = await fetch(`${API_BASE}/denuncias/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Erro ao carregar denúncias');
+                
+                const data = await response.json();
+                const denuncias = data.results || data;
+                
+                if (denuncias.length === 0) {
+                    grid.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>Nenhuma denúncia para moderar</p></div>';
+                    return;
+                }
+                
+                grid.innerHTML = denuncias.map(d => `
+                    <div class="item-card">
+                        <div class="item-header">
+                            <h3 class="item-title">${d.titulo}</h3>
+                            <span class="status-badge status-${d.status}">${getStatusLabel(d.status)}</span>
+                        </div>
+                        ${d.imagem_url ? `<img src="${d.imagem_url}" class="item-image" alt="${d.titulo}">` : ''}
+                        <div class="item-details">
+                            <p><strong>Descrição:</strong> ${d.descricao}</p>
+                            <p><strong>Localização:</strong> ${d.localizacao}</p>
+                            ${d.usuario_nome ? `<p><strong>Denunciante:</strong> ${d.usuario_nome}</p>` : ''}
+                            ${d.moderador_nome ? `<p><strong>Moderador:</strong> ${d.moderador_nome}</p>` : ''}
+                            ${d.observacoes_moderador ? `<p><strong>Observações:</strong> ${d.observacoes_moderador}</p>` : ''}
+                        </div>
+                        <div class="item-meta">
+                            <span><i class="fas fa-calendar"></i> ${new Date(d.data_criacao).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        ${d.status === 'pendente' ? `
+                            <textarea class="observacoes-input" id="obs-denuncia-${d.id}" placeholder="Observações do moderador (opcional)"></textarea>
+                            <div class="item-actions">
+                                <button class="btn-action btn-aprovar" onclick="moderarDenuncia(${d.id}, 'aprovar')">
+                                    <i class="fas fa-check"></i> Aprovar
+                                </button>
+                                <button class="btn-action btn-em-andamento" onclick="moderarDenuncia(${d.id}, 'em_andamento')">
+                                    <i class="fas fa-hourglass-half"></i> Em Andamento
+                                </button>
+                                <button class="btn-action btn-rejeitar" onclick="moderarDenuncia(${d.id}, 'rejeitar')">
+                                    <i class="fas fa-times"></i> Rejeitar
+                                </button>
+                            </div>
+                        ` : d.status === 'aprovada' || d.status === 'em_andamento' ? `
+                            <div class="item-actions">
+                                <button class="btn-action btn-resolver" onclick="moderarDenuncia(${d.id}, 'resolver')">
+                                    <i class="fas fa-check-double"></i> Marcar como Resolvida
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                grid.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar denúncias</p></div>';
+            }
+        }
+
+        async function loadAdocoes() {
+            const grid = document.getElementById('adocoes-grid');
+            const token = localStorage.getItem('access_token');
+            
+            try {
+                const response = await fetch(`${API_BASE}/adocoes/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Erro ao carregar adoções');
+                
+                const data = await response.json();
+                const adocoes = data.results || data;
+                
+                if (adocoes.length === 0) {
+                    grid.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>Nenhuma adoção pendente</p></div>';
+                    return;
+                }
+                
+                grid.innerHTML = adocoes.map(a => `
+                    <div class="item-card">
+                        <div class="item-header">
+                            <h3 class="item-title">Adoção #${a.id}</h3>
+                            <span class="status-badge status-${a.status}">${getStatusLabel(a.status)}</span>
+                        </div>
+                        <div class="item-details">
+                            <p><strong>Animal ID:</strong> ${a.animal}</p>
+                            <p><strong>Usuário ID:</strong> ${a.usuario}</p>
+                            ${a.motivo_rejeicao ? `<p><strong>Motivo Rejeição:</strong> ${a.motivo_rejeicao}</p>` : ''}
+                        </div>
+                        <div class="item-meta">
+                            <span><i class="fas fa-calendar"></i> ${new Date(a.data_solicitacao).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        ${a.status === 'pendente' ? `
+                            <div class="item-actions">
+                                <button class="btn-action btn-aprovar" onclick="moderarAdocao(${a.id}, 'aprovada')">
+                                    <i class="fas fa-check"></i> Aprovar Adoção
+                                </button>
+                                <button class="btn-action btn-rejeitar" onclick="moderarAdocao(${a.id}, 'rejeitada')">
+                                    <i class="fas fa-times"></i> Rejeitar Adoção
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                grid.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Erro ao carregar adoções</p></div>';
+            }
+        }
+
+        async function loadContatos() {
+            const grid = document.getElementById('contatos-grid');
+            grid.innerHTML = '<div class="empty-state"><i class="fas fa-info-circle"></i><p>Funcionalidade de contatos em desenvolvimento. Por enquanto, use o Django Admin.</p></div>';
+        }
+
+        async function moderarDenuncia(id, acao) {
+            const token = localStorage.getItem('access_token');
+            const obs = document.getElementById(`obs-denuncia-${id}`)?.value || '';
+            
+            try {
+                const response = await fetch(`${API_BASE}/denuncias/${id}/${acao}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ observacoes: obs })
+                });
+                
+                if (!response.ok) throw new Error('Erro ao moderar denúncia');
+                
+                alert('Denúncia atualizada com sucesso!');
+                await loadDenuncias();
+                updateStats();
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao atualizar denúncia. Verifique se você tem permissão de administrador.');
+            }
+        }
+
+        async function moderarAdocao(id, novoStatus) {
+            const token = localStorage.getItem('access_token');
+            
+            try {
+                const response = await fetch(`${API_BASE}/adocoes/${id}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: novoStatus })
+                });
+                
+                if (!response.ok) throw new Error('Erro ao moderar adoção');
+                
+                alert('Adoção atualizada com sucesso!');
+                await loadAdocoes();
+                updateStats();
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao atualizar adoção. Verifique suas permissões.');
+            }
+        }
+
+        async function updateStats() {
+            const token = localStorage.getItem('access_token');
+            
+            try {
+                // Denúncias pendentes
+                const denuncias = await fetch(`${API_BASE}/denuncias/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).then(r => r.json());
+                const denunciasPendentes = (denuncias.results || denuncias).filter(d => d.status === 'pendente').length;
+                document.getElementById('stat-denuncias').textContent = denunciasPendentes;
+                document.getElementById('badge-denuncias').textContent = denunciasPendentes;
+                
+                // Adoções pendentes
+                const adocoes = await fetch(`${API_BASE}/adocoes/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).then(r => r.json());
+                const adocoesPendentes = (adocoes.results || adocoes).filter(a => a.status === 'pendente').length;
+                document.getElementById('stat-adocoes').textContent = adocoesPendentes;
+                document.getElementById('badge-adocoes').textContent = adocoesPendentes;
+                
+                // Contatos (placeholder)
+                document.getElementById('stat-contatos').textContent = '—';
+                document.getElementById('badge-contatos').textContent = '0';
+                
+            } catch (error) {
+                console.error('Erro ao atualizar estatísticas:', error);
+            }
+        }
+
+        function getStatusLabel(status) {
+            const labels = {
+                'pendente': 'Pendente',
+                'aprovada': 'Aprovada',
+                'em_andamento': 'Em Andamento',
+                'resolvida': 'Resolvida',
+                'rejeitada': 'Rejeitada',
+                'cancelada': 'Cancelada'
+            };
+            return labels[status] || status;
+        }
+
+        // Iniciar ao carregar página
+        init();
+    </script>
+</body>
+</html>

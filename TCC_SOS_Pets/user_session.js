@@ -22,7 +22,7 @@ async function refreshToken(refresh) {
   return data.access;
 }
 
-function renderLogged(username) {
+function renderLogged(username, isStaff = false) {
   const container = document.querySelector('.nav-user-area');
   if (!container) return;
   container.innerHTML = '';
@@ -41,6 +41,7 @@ function renderLogged(username) {
   menu.className = 'nav-user-menu';
   menu.innerHTML = `
     <a href="/perfil/"><i class="fas fa-id-card"></i> Perfil</a>
+    ${isStaff ? '<a href="/admin-panel/"><i class="fas fa-shield-alt"></i> Painel Admin</a>' : ''}
     <hr>
     <button type="button" class="logout-item"><i class="fas fa-sign-out-alt"></i> Sair</button>
   `;
@@ -95,14 +96,14 @@ async function initSession() {
   if (!access) { renderLoggedOut(); return; }
   try {
     const me = await fetchMe(access);
-    renderLogged(me.username || 'Usuário');
+    renderLogged(me.username || 'Usuário', me.is_staff || false);
   } catch (e) {
     if (e.message === 'unauthorized' && refresh) {
       try {
         const newAccess = await refreshToken(refresh);
         if (newAccess) {
           const me = await fetchMe(newAccess);
-          renderLogged(me.username || 'Usuário');
+          renderLogged(me.username || 'Usuário', me.is_staff || false);
           return;
         }
       } catch (_) { /* falha no refresh */ }

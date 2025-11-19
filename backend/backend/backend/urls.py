@@ -47,6 +47,7 @@ urlpatterns = [
     path('historias/', TemplateView.as_view(template_name='historias.html'), name='historias'),
     path('formulario-adocao/', TemplateView.as_view(template_name='formulario-adocao.html'), name='formulario_adocao'),
     path('perfil/', TemplateView.as_view(template_name='perfil.html'), name='perfil'),  # placeholder futura página de perfil
+    path('admin-panel/', TemplateView.as_view(template_name='admin-panel.html'), name='admin_panel'),  # painel administrativo
     # Rota legacy: redireciona /<slug>.html -> /<slug>/ para compatibilidade com links antigos
     re_path(r'^(?P<slug>[\w-]+)\.html$', lambda request, slug: HttpResponseRedirect(f'/{slug}/') if slug in {
         'adocao','arrecadacao','denuncia','animais-perdidos','contato','historias','formulario-adocao','perfil'

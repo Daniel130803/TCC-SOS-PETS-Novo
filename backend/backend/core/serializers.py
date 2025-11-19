@@ -67,6 +67,7 @@ class UserMeSerializer(serializers.Serializer):
     username = serializers.CharField(read_only=True)
     email = serializers.EmailField(read_only=True)
     first_name = serializers.CharField(read_only=True)
+    is_staff = serializers.BooleanField(read_only=True)
     telefone = serializers.CharField(read_only=True, allow_blank=True)
 
     def to_representation(self, instance):
@@ -80,6 +81,7 @@ class UserMeSerializer(serializers.Serializer):
             'username': instance.username,
             'email': instance.email or '',
             'first_name': instance.first_name or '',
+            'is_staff': instance.is_staff,
             'telefone': telefone,
         }
 
