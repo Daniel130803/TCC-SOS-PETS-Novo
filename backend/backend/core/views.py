@@ -1,10 +1,10 @@
 from django.shortcuts import render
-from rest_framework import viewsets, permissions
-from .models import Animal, Adocao
-from .serializers import AnimalSerializer, AdocaoSerializer
+from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import action
+from .models import Animal, Adocao, Denuncia
+from .serializers import AnimalSerializer, AdocaoSerializer, DenunciaSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
 from .serializers import RegisterSerializer, UserMeSerializer, UserUpdateSerializer
 from django.contrib.auth.models import User
 from .models import Usuario
@@ -86,3 +86,62 @@ class MeView(APIView):
             updated_data = UserMeSerializer(user).data
             return Response(updated_data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DenunciaViewSet(viewsets.ModelViewSet):
+    queryset = Denuncia.objects.all()
+    serializer_class = DenunciaSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        # Admins veem tudo, usuários normais veem apenas as próprias denúncias
+        if self.request.user.is_authenticated and not self.request.user.is_staff:
+            if hasattr(self.request.user, 'usuario'):
+                qs = qs.filter(usuario=self.request.user.usuario)
+        return qs
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def aprovar(self, request, pk=None):
+        """Endpoint para admin aprovar uma denúncia"""
+        denuncia = self.get_object()
+        denuncia.status = 'aprovada'
+        denuncia.moderador = request.user
+        denuncia.observacoes_moderador = request.data.get('observacoes', '')
+        denuncia.save()
+        serializer = self.get_serializer(denuncia)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def rejeitar(self, request, pk=None):
+        """Endpoint para admin rejeitar uma denúncia"""
+        denuncia = self.get_object()
+        denuncia.status = 'rejeitada'
+        denuncia.moderador = request.user
+        denuncia.observacoes_moderador = request.data.get('observacoes', 'Denúncia rejeitada.')
+        denuncia.save()
+        serializer = self.get_serializer(denuncia)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def em_andamento(self, request, pk=None):
+        """Endpoint para admin marcar denúncia como em andamento"""
+        denuncia = self.get_object()
+        denuncia.status = 'em_andamento'
+        denuncia.moderador = request.user
+        denuncia.observacoes_moderador = request.data.get('observacoes', 'Denúncia em análise.')
+        denuncia.save()
+        serializer = self.get_serializer(denuncia)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def resolver(self, request, pk=None):
+        """Endpoint para admin marcar denúncia como resolvida"""
+        denuncia = self.get_object()
+        denuncia.status = 'resolvida'
+        denuncia.moderador = request.user
+        denuncia.observacoes_moderador = request.data.get('observacoes', 'Denúncia resolvida.')
+        denuncia.save()
+        serializer = self.get_serializer(denuncia)
+        return Response(serializer.data)
+

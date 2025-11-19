@@ -20,9 +20,31 @@ class AdocaoAdmin(admin.ModelAdmin):
 
 @admin.register(Denuncia)
 class DenunciaAdmin(admin.ModelAdmin):
-    list_display = ('titulo', 'localizacao', 'status', 'data_criacao')
+    list_display = ('titulo', 'usuario', 'localizacao', 'status', 'moderador', 'data_criacao')
     list_filter = ('status', 'data_criacao')
-    search_fields = ('titulo', 'descricao')
+    search_fields = ('titulo', 'descricao', 'localizacao')
+    readonly_fields = ('data_criacao', 'data_atualizacao')
+    actions = ['aprovar_denuncias', 'rejeitar_denuncias', 'marcar_em_andamento', 'marcar_resolvidas']
+
+    def aprovar_denuncias(self, request, queryset):
+        updated = queryset.update(status='aprovada', moderador=request.user)
+        self.message_user(request, f'{updated} denúncia(s) aprovada(s).')
+    aprovar_denuncias.short_description = 'Aprovar denúncias selecionadas'
+
+    def rejeitar_denuncias(self, request, queryset):
+        updated = queryset.update(status='rejeitada', moderador=request.user)
+        self.message_user(request, f'{updated} denúncia(s) rejeitada(s).')
+    rejeitar_denuncias.short_description = 'Rejeitar denúncias selecionadas'
+
+    def marcar_em_andamento(self, request, queryset):
+        updated = queryset.update(status='em_andamento', moderador=request.user)
+        self.message_user(request, f'{updated} denúncia(s) marcada(s) como em andamento.')
+    marcar_em_andamento.short_description = 'Marcar como em andamento'
+
+    def marcar_resolvidas(self, request, queryset):
+        updated = queryset.update(status='resolvida', moderador=request.user)
+        self.message_user(request, f'{updated} denúncia(s) marcada(s) como resolvida(s).')
+    marcar_resolvidas.short_description = 'Marcar como resolvidas'
 
 @admin.register(AnimalPerdido)
 class AnimalPerdidoAdmin(admin.ModelAdmin):

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Animal, Adocao, Usuario, AnimalFoto, AnimalVideo
+from .models import Animal, Adocao, Usuario, AnimalFoto, AnimalVideo, Denuncia
 
 class AnimalSerializer(serializers.ModelSerializer):
     imagem_absolute = serializers.SerializerMethodField()
@@ -108,3 +108,36 @@ class UserUpdateSerializer(serializers.Serializer):
             perfil.save()
 
         return instance
+
+
+class DenunciaSerializer(serializers.ModelSerializer):
+    usuario_nome = serializers.CharField(source='usuario.user.get_full_name', read_only=True)
+    moderador_nome = serializers.CharField(source='moderador.get_full_name', read_only=True)
+    imagem_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Denuncia
+        fields = [
+            'id', 'titulo', 'descricao', 'localizacao', 'imagem', 'imagem_url',
+            'status', 'usuario', 'usuario_nome', 'moderador', 'moderador_nome',
+            'observacoes_moderador', 'data_criacao', 'data_atualizacao'
+        ]
+        read_only_fields = ['usuario', 'moderador', 'observacoes_moderador', 'data_criacao', 'data_atualizacao']
+
+    def get_imagem_url(self, obj):
+        request = self.context.get('request')
+        if obj.imagem and hasattr(obj.imagem, 'url'):
+            url = obj.imagem.url
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return None
+
+    def create(self, validated_data):
+        # Associa automaticamente o usuário autenticado
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            # Busca ou cria o perfil Usuario
+            usuario, _ = Usuario.objects.get_or_create(user=request.user)
+            validated_data['usuario'] = usuario
+        return super().create(validated_data)

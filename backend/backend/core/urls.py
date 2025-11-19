@@ -1,12 +1,13 @@
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .views import RegisterView, MeView, AnimalViewSet, AdocaoViewSet
+from .views import RegisterView, MeView, AnimalViewSet, AdocaoViewSet, DenunciaViewSet
 from .views_fotos import AnimalFotoUploadView
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'animais', AnimalViewSet, basename='animal')
 router.register(r'adocoes', AdocaoViewSet, basename='adocao')
+router.register(r'denuncias', DenunciaViewSet, basename='denuncia')
 
 urlpatterns = [
     path('auth/register/', RegisterView.as_view(), name='auth-register'),

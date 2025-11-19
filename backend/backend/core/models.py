@@ -124,22 +124,25 @@ class Adocao(models.Model):
 class Denuncia(models.Model):
     STATUS_CHOICES = [
         ('pendente', 'Pendente'),
-        ('em_analise', 'Em Análise'),
+        ('aprovada', 'Aprovada'),
+        ('em_andamento', 'Em Andamento'),
         ('resolvida', 'Resolvida'),
-        ('descartada', 'Descartada'),
+        ('rejeitada', 'Rejeitada'),
     ]
     
-    usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, related_name='denuncias')
-    titulo = models.CharField(max_length=200)
-    descricao = models.TextField()
-    localizacao = models.CharField(max_length=255)
-    imagem = models.ImageField(upload_to='denuncias/')
+    usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, related_name='denuncias')
+    moderador = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='denuncias_moderadas', verbose_name='Moderador')
+    titulo = models.CharField(max_length=200, verbose_name='Título')
+    descricao = models.TextField(verbose_name='Descrição')
+    localizacao = models.CharField(max_length=255, verbose_name='Localização')
+    imagem = models.ImageField(upload_to='denuncias/', blank=True, null=True, verbose_name='Imagem')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
-    data_criacao = models.DateTimeField(auto_now_add=True)
-    data_atualizacao = models.DateTimeField(auto_now=True)
+    observacoes_moderador = models.TextField(blank=True, null=True, verbose_name='Observações do Moderador')
+    data_criacao = models.DateTimeField(auto_now_add=True, verbose_name='Data de Criação')
+    data_atualizacao = models.DateTimeField(auto_now=True, verbose_name='Última Atualização')
     
     def __str__(self):
-        return self.titulo
+        return f"{self.titulo} - {self.get_status_display()}"
     
     class Meta:
         verbose_name = "Denúncia"
