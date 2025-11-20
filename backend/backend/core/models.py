@@ -120,6 +120,131 @@ class Adocao(models.Model):
         unique_together = ('usuario', 'animal')
 
 
+# ===== ANIMAL PARA ADOÇÃO (Cadastrado por Usuários) =====
+class AnimalParaAdocao(models.Model):
+    ESPECIE_CHOICES = [
+        ('cachorro', 'Cachorro'),
+        ('gato', 'Gato'),
+        ('outro', 'Outro'),
+    ]
+    
+    PORTE_CHOICES = [
+        ('pequeno', 'Pequeno (até 10kg)'),
+        ('medio', 'Médio (10kg a 25kg)'),
+        ('grande', 'Grande (acima de 25kg)'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pendente', 'Aguardando Aprovação'),
+        ('aprovado', 'Aprovado'),
+        ('rejeitado', 'Rejeitado'),
+        ('adotado', 'Adotado'),
+    ]
+    
+    # Dados do pet
+    usuario_doador = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='animais_para_adocao', verbose_name='Usuário que cadastrou')
+    nome = models.CharField(max_length=100, verbose_name='Nome do Animal')
+    especie = models.CharField(max_length=20, choices=ESPECIE_CHOICES, verbose_name='Espécie')
+    porte = models.CharField(max_length=10, choices=PORTE_CHOICES, verbose_name='Porte')
+    descricao = models.TextField(verbose_name='Descrição do Animal', help_text='Descreva o temperamento, cuidados especiais, etc.')
+    
+    # Localização (endereço oculto até aprovação de adoção)
+    estado = models.CharField(max_length=2, verbose_name='Estado')
+    cidade = models.CharField(max_length=100, verbose_name='Cidade')
+    endereco_completo = models.CharField(max_length=255, verbose_name='Endereço Completo', help_text='Será compartilhado apenas após aprovação da adoção')
+    
+    # Contatos do doador
+    telefone = models.CharField(max_length=15, verbose_name='Telefone para Contato')
+    email = models.EmailField(verbose_name='E-mail para Contato')
+    
+    # Mídia
+    imagem_principal = models.ImageField(upload_to='adocao/pendentes/', blank=True, null=True, verbose_name='Foto Principal')
+    
+    # Status e controle
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente', verbose_name='Status')
+    motivo_rejeicao = models.TextField(blank=True, null=True, verbose_name='Motivo da Rejeição')
+    moderador_aprovacao = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='animais_aprovados', verbose_name='Moderador que Aprovou')
+    data_cadastro = models.DateTimeField(auto_now_add=True, verbose_name='Data de Cadastro')
+    data_aprovacao = models.DateTimeField(null=True, blank=True, verbose_name='Data de Aprovação')
+    data_atualizacao = models.DateTimeField(auto_now=True, verbose_name='Última Atualização')
+    
+    def __str__(self):
+        return f"{self.nome} ({self.get_especie_display()}) - {self.get_status_display()}"
+    
+    class Meta:
+        verbose_name = "Animal para Adoção"
+        verbose_name_plural = "Animais para Adoção"
+        ordering = ['-data_cadastro']
+
+
+# ===== SOLICITAÇÃO DE ADOÇÃO =====
+class SolicitacaoAdocao(models.Model):
+    STATUS_CHOICES = [
+        ('pendente', 'Aguardando Aprovação'),
+        ('aprovada', 'Aprovada'),
+        ('rejeitada', 'Rejeitada'),
+        ('cancelada', 'Cancelada'),
+    ]
+    
+    animal = models.ForeignKey(AnimalParaAdocao, on_delete=models.CASCADE, related_name='solicitacoes', verbose_name='Animal')
+    usuario_interessado = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='solicitacoes_adocao', verbose_name='Interessado em Adotar')
+    mensagem = models.TextField(blank=True, null=True, verbose_name='Mensagem do Interessado', help_text='Conte um pouco sobre você e por que quer adotar')
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente', verbose_name='Status')
+    motivo_rejeicao = models.TextField(blank=True, null=True, verbose_name='Motivo da Rejeição')
+    moderador_aprovacao = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='solicitacoes_aprovadas', verbose_name='Moderador que Aprovou')
+    
+    # Notificações
+    notificado_doador = models.BooleanField(default=False, verbose_name='Doador Notificado')
+    notificado_interessado = models.BooleanField(default=False, verbose_name='Interessado Notificado')
+    
+    data_solicitacao = models.DateTimeField(auto_now_add=True, verbose_name='Data da Solicitação')
+    data_aprovacao = models.DateTimeField(null=True, blank=True, verbose_name='Data de Aprovação')
+    data_atualizacao = models.DateTimeField(auto_now=True, verbose_name='Última Atualização')
+    
+    def __str__(self):
+        return f"Solicitação de {self.usuario_interessado} para adotar {self.animal.nome}"
+    
+    class Meta:
+        verbose_name = "Solicitação de Adoção"
+        verbose_name_plural = "Solicitações de Adoção"
+        ordering = ['-data_solicitacao']
+        unique_together = ('animal', 'usuario_interessado')
+
+
+# ===== NOTIFICAÇÃO =====
+class Notificacao(models.Model):
+    TIPO_CHOICES = [
+        ('adocao_aprovada', 'Adoção Aprovada'),
+        ('adocao_rejeitada', 'Adoção Rejeitada'),
+        ('animal_aprovado', 'Animal Aprovado para Doação'),
+        ('animal_rejeitado', 'Animal Rejeitado'),
+        ('interesse_adocao', 'Novo Interesse em Adoção'),
+        ('denuncia', 'Denúncia'),
+    ]
+    
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='notificacoes', verbose_name='Usuário')
+    tipo = models.CharField(max_length=30, choices=TIPO_CHOICES, verbose_name='Tipo')
+    titulo = models.CharField(max_length=200, verbose_name='Título')
+    mensagem = models.TextField(verbose_name='Mensagem')
+    link = models.CharField(max_length=255, blank=True, null=True, verbose_name='Link de Ação')
+    lida = models.BooleanField(default=False, verbose_name='Lida')
+    data_criacao = models.DateTimeField(auto_now_add=True, verbose_name='Data')
+    
+    # Dados de contato (para adoções aprovadas)
+    contato_telefone = models.CharField(max_length=15, blank=True, null=True, verbose_name='Telefone de Contato')
+    contato_email = models.EmailField(blank=True, null=True, verbose_name='E-mail de Contato')
+    contato_endereco = models.CharField(max_length=255, blank=True, null=True, verbose_name='Endereço')
+    
+    def __str__(self):
+        return f"{self.titulo} - {self.usuario}"
+    
+    class Meta:
+        verbose_name = "Notificação"
+        verbose_name_plural = "Notificações"
+        ordering = ['-data_criacao']
+
+
 # ===== DENÚNCIA =====
 class Denuncia(models.Model):
     STATUS_CHOICES = [

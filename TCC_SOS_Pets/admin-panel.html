@@ -1089,109 +1089,7 @@
             <p>Gerencie denúncias, adoções e mensagens de contato</p>
         </div>
 
-        <div class="stats-cards">
-            <div class="stat-card clickable" onclick="filterByStatus('')">
-                <i class="fas fa-list-alt" style="font-size: 2em; color: #6c5ce7;"></i>
-                <div class="stat-number" id="stat-total-denuncias">0</div>
-                <div class="stat-label">Total de Denúncias</div>
-            </div>
-            <div class="stat-card clickable" onclick="filterByStatus('pendente')">
-                <i class="fas fa-clock" style="font-size: 2em; color: #fdcb6e;"></i>
-                <div class="stat-number" id="stat-denuncias">0</div>
-                <div class="stat-label">Denúncias Pendentes</div>
-            </div>
-            <div class="stat-card clickable" onclick="filterByStatus('em_andamento')">
-                <i class="fas fa-hourglass-half" style="font-size: 2em; color: #74b9ff;"></i>
-                <div class="stat-number" id="stat-denuncias-andamento">0</div>
-                <div class="stat-label">Em Andamento</div>
-            </div>
-            <div class="stat-card clickable" onclick="filterByStatus('resolvida')">
-                <i class="fas fa-check-circle" style="font-size: 2em; color: #00b894;"></i>
-                <div class="stat-number" id="stat-denuncias-resolvidas">0</div>
-                <div class="stat-label">Resolvidas</div>
-            </div>
-        </div>
-        
-        <!-- Estatísticas por Categoria -->
-        <div class="category-stats" id="category-stats" style="display: none;">
-            <h3 style="margin-bottom: 15px; color: #2d3436;">
-                <i class="fas fa-chart-pie"></i> Denúncias por Categoria
-            </h3>
-            <div class="category-stats-grid" id="category-stats-grid">
-                <!-- Será preenchido dinamicamente -->
-            </div>
-        </div>
-
-        <div class="stats-cards" style="margin-top: 20px;">
-            <div class="stat-card">
-                <i class="fas fa-heart" style="font-size: 2em; color: #e84393;"></i>
-                <div class="stat-number" id="stat-adocoes">0</div>
-                <div class="stat-label">Adoções Pendentes</div>
-            </div>
-            <div class="stat-card">
-                <i class="fas fa-envelope" style="font-size: 2em; color: #0984e3;"></i>
-                <div class="stat-number" id="stat-contatos">0</div>
-                <div class="stat-label">Contatos Não Lidos</div>
-            </div>
-        </div>
-
-        <!-- Barra de Busca (sempre visível) -->
-        <div class="search-section">
-            <div class="search-bar">
-                <i class="fas fa-search"></i>
-                <input type="text" id="search-input" placeholder="Buscar denúncias por denunciante, descrição, localização..." onfocus="showFilters()" onkeyup="applyFilters()" onkeypress="if(event.key === 'Enter') applyFilters(true)">
-            </div>
-        </div>
-
-        <!-- Filtros Avançados (aparecem ao clicar nos cards) -->
-        <div class="filters-section" id="filters-section" style="display: none;">
-            <div class="filters-header">
-                <h3><i class="fas fa-filter"></i> Filtros Avançados</h3>
-                <button class="btn-clear-filters" onclick="clearFilters()">
-                    <i class="fas fa-times"></i> Limpar Filtros
-                </button>
-            </div>
-            
-            <div class="filters-content">
-                <div class="filter-group">
-                    <label><i class="fas fa-flag"></i> Status</label>
-                    <select id="filter-status" onchange="applyFilters()">
-                        <option value="">Todos os status</option>
-                        <option value="pendente">Pendente</option>
-                        <option value="em_andamento">Em Andamento</option>
-                        <option value="resolvida">Resolvida</option>
-                        <option value="rejeitada">Rejeitada</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label><i class="fas fa-tags"></i> Categoria</label>
-                    <select id="filter-categoria" onchange="applyFilters()">
-                        <option value="">Todas as categorias</option>
-                        <option value="maus_tratos">🐾 Maus-tratos</option>
-                        <option value="abandono">🏠 Abandono</option>
-                        <option value="acumulacao">🐕 Acumulação</option>
-                        <option value="animal_perdido">🔍 Animal Perdido</option>
-                        <option value="animal_ferido">🏥 Animal Ferido</option>
-                        <option value="outros">⚠️ Outros</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label><i class="fas fa-calendar"></i> Data</label>
-                    <select id="filter-data" onchange="applyFilters()">
-                        <option value="">Todas as datas</option>
-                        <option value="hoje">Hoje</option>
-                        <option value="semana">Última semana</option>
-                        <option value="mes">Último mês</option>
-                        <option value="tres_meses">Últimos 3 meses</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="filter-active-tags" id="filter-active-tags"></div>
-        </div>
-
+        <!-- Abas do Admin (logo abaixo do cabeçalho) -->
         <div class="admin-tabs">
             <button class="admin-tab active" data-tab="denuncias">
                 <i class="fas fa-bullhorn"></i> Denúncias
@@ -1207,21 +1105,151 @@
             </button>
         </div>
 
+        <!-- Conteúdo da aba Denúncias -->
         <div id="denuncias-tab" class="tab-content active">
+            <!-- Estatísticas de Denúncias -->
+            <div class="stats-cards">
+                <div class="stat-card clickable" onclick="filterByStatus('')">
+                    <i class="fas fa-list-alt" style="font-size: 2em; color: #6c5ce7;"></i>
+                    <div class="stat-number" id="stat-total-denuncias">0</div>
+                    <div class="stat-label">Total de Denúncias</div>
+                </div>
+                <div class="stat-card clickable" onclick="filterByStatus('pendente')">
+                    <i class="fas fa-clock" style="font-size: 2em; color: #fdcb6e;"></i>
+                    <div class="stat-number" id="stat-denuncias">0</div>
+                    <div class="stat-label">Denúncias Pendentes</div>
+                </div>
+                <div class="stat-card clickable" onclick="filterByStatus('em_andamento')">
+                    <i class="fas fa-hourglass-half" style="font-size: 2em; color: #74b9ff;"></i>
+                    <div class="stat-number" id="stat-denuncias-andamento">0</div>
+                    <div class="stat-label">Em Andamento</div>
+                </div>
+                <div class="stat-card clickable" onclick="filterByStatus('resolvida')">
+                    <i class="fas fa-check-circle" style="font-size: 2em; color: #00b894;"></i>
+                    <div class="stat-number" id="stat-denuncias-resolvidas">0</div>
+                    <div class="stat-label">Resolvidas</div>
+                </div>
+            </div>
+            
+            <!-- Estatísticas por Categoria -->
+            <div class="category-stats" id="category-stats" style="display: none;">
+                <h3 style="margin-bottom: 15px; color: #2d3436;">
+                    <i class="fas fa-chart-pie"></i> Denúncias por Categoria
+                </h3>
+                <div class="category-stats-grid" id="category-stats-grid">
+                    <!-- Será preenchido dinamicamente -->
+                </div>
+            </div>
+
+            <!-- Barra de Busca (sempre visível) -->
+            <div class="search-section">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Buscar denúncias por denunciante, descrição, localização..." onfocus="showFilters()" onkeyup="applyFilters()" onkeypress="if(event.key === 'Enter') applyFilters(true)">
+                </div>
+            </div>
+
+            <!-- Filtros Avançados (aparecem ao clicar nos cards) -->
+            <div class="filters-section" id="filters-section" style="display: none;">
+                <div class="filters-header">
+                    <h3><i class="fas fa-filter"></i> Filtros Avançados</h3>
+                    <button class="btn-clear-filters" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> Limpar Filtros
+                    </button>
+                </div>
+                
+                <div class="filters-content">
+                    <div class="filter-group">
+                        <label for="filter-status"><i class="fas fa-flag"></i> Status</label>
+                        <select id="filter-status" onchange="applyFilters()">
+                            <option value="">Todos os status</option>
+                            <option value="pendente">Pendente</option>
+                            <option value="em_andamento">Em Andamento</option>
+                            <option value="resolvida">Resolvida</option>
+                            <option value="rejeitada">Rejeitada</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-categoria"><i class="fas fa-tags"></i> Categoria</label>
+                        <select id="filter-categoria" onchange="applyFilters()">
+                            <option value="">Todas as categorias</option>
+                            <option value="maus_tratos">🐾 Maus-tratos</option>
+                            <option value="abandono">🏠 Abandono</option>
+                            <option value="acumulacao">🐕 Acumulação</option>
+                            <option value="animal_perdido">🔍 Animal Perdido</option>
+                            <option value="animal_ferido">🏥 Animal Ferido</option>
+                            <option value="outros">⚠️ Outros</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-data"><i class="fas fa-calendar"></i> Data</label>
+                        <select id="filter-data" onchange="applyFilters()">
+                            <option value="">Todas as datas</option>
+                            <option value="hoje">Hoje</option>
+                            <option value="semana">Última semana</option>
+                            <option value="mes">Último mês</option>
+                            <option value="tres_meses">Últimos 3 meses</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="filter-active-tags" id="filter-active-tags"></div>
+            </div>
+            
+            <!-- Lista de Denúncias -->
             <div class="loading">
                 <i class="fas fa-spinner"></i> Carregando denúncias...
             </div>
             <div class="items-grid" id="denuncias-grid"></div>
         </div>
 
+        <!-- Conteúdo da aba Adoções -->
         <div id="adocoes-tab" class="tab-content">
+            <!-- Estatísticas de Adoções (futuramente) -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <i class="fas fa-heart" style="font-size: 2em; color: #e84393;"></i>
+                    <div class="stat-number" id="stat-adocoes">0</div>
+                    <div class="stat-label">Adoções Pendentes</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-check-circle" style="font-size: 2em; color: #00b894;"></i>
+                    <div class="stat-number" id="stat-adocoes-aprovadas">0</div>
+                    <div class="stat-label">Adoções Aprovadas</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-times-circle" style="font-size: 2em; color: #d63031;"></i>
+                    <div class="stat-number" id="stat-adocoes-rejeitadas">0</div>
+                    <div class="stat-label">Adoções Rejeitadas</div>
+                </div>
+            </div>
+            
+            <!-- Lista de Adoções -->
             <div class="loading">
                 <i class="fas fa-spinner"></i> Carregando adoções...
             </div>
             <div class="items-grid" id="adocoes-grid"></div>
         </div>
 
+        <!-- Conteúdo da aba Contatos -->
         <div id="contatos-tab" class="tab-content">
+            <!-- Estatísticas de Contatos (futuramente) -->
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <i class="fas fa-envelope" style="font-size: 2em; color: #0984e3;"></i>
+                    <div class="stat-number" id="stat-contatos">0</div>
+                    <div class="stat-label">Contatos Não Lidos</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-envelope-open" style="font-size: 2em; color: #00b894;"></i>
+                    <div class="stat-number" id="stat-contatos-lidos">0</div>
+                    <div class="stat-label">Contatos Lidos</div>
+                </div>
+            </div>
+            
+            <!-- Lista de Contatos -->
             <div class="loading">
                 <i class="fas fa-spinner"></i> Carregando contatos...
             </div>
@@ -1647,16 +1675,23 @@
                 const denunciasPendentes = denunciasArray.filter(d => d.status === 'pendente').length;
                 document.getElementById('badge-denuncias').textContent = denunciasPendentes;
                 
-                // Adoções pendentes
+                // Adoções
                 const adocoes = await fetch(`${API_BASE}/adocoes/`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }).then(r => r.json());
-                const adocoesPendentes = (adocoes.results || adocoes).filter(a => a.status === 'pendente').length;
+                const adocoesArray = adocoes.results || adocoes;
+                const adocoesPendentes = adocoesArray.filter(a => a.status === 'pendente').length;
+                const adocoesAprovadas = adocoesArray.filter(a => a.status === 'aprovada').length;
+                const adocoesRejeitadas = adocoesArray.filter(a => a.status === 'rejeitada').length;
+                
                 document.getElementById('stat-adocoes').textContent = adocoesPendentes;
+                document.getElementById('stat-adocoes-aprovadas').textContent = adocoesAprovadas;
+                document.getElementById('stat-adocoes-rejeitadas').textContent = adocoesRejeitadas;
                 document.getElementById('badge-adocoes').textContent = adocoesPendentes;
                 
                 // Contatos (placeholder)
                 document.getElementById('stat-contatos').textContent = '—';
+                document.getElementById('stat-contatos-lidos').textContent = '—';
                 document.getElementById('badge-contatos').textContent = '0';
                 
             } catch (error) {

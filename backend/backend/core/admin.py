@@ -1,5 +1,8 @@
 from django.contrib import admin
-from .models import Usuario, Animal, Adocao, Denuncia, AnimalPerdido, Donativo, Historia, Contato
+from .models import (
+    Usuario, Animal, Adocao, Denuncia, AnimalPerdido, Donativo, Historia, Contato,
+    AnimalParaAdocao, SolicitacaoAdocao, Notificacao
+)
 
 @admin.register(Usuario)
 class UsuarioAdmin(admin.ModelAdmin):
@@ -69,3 +72,66 @@ class ContatoAdmin(admin.ModelAdmin):
     list_display = ('nome', 'email', 'assunto', 'lido', 'data_criacao')
     list_filter = ('lido', 'data_criacao')
     search_fields = ('nome', 'email', 'assunto')
+
+
+@admin.register(AnimalParaAdocao)
+class AnimalParaAdocaoAdmin(admin.ModelAdmin):
+    list_display = ('nome', 'especie', 'porte', 'usuario_doador', 'cidade', 'estado', 'status', 'data_cadastro')
+    list_filter = ('especie', 'porte', 'status', 'estado', 'data_cadastro')
+    search_fields = ('nome', 'descricao', 'cidade', 'usuario_doador__user__username')
+    readonly_fields = ('data_cadastro', 'data_aprovacao')
+    actions = ['aprovar_pets', 'rejeitar_pets']
+    
+    def aprovar_pets(self, request, queryset):
+        from django.utils import timezone
+        updated = queryset.update(status='aprovado', data_aprovacao=timezone.now())
+        self.message_user(request, f'{updated} pet(s) aprovado(s) para adoção.')
+    aprovar_pets.short_description = 'Aprovar pets selecionados'
+    
+    def rejeitar_pets(self, request, queryset):
+        updated = queryset.update(status='rejeitado')
+        self.message_user(request, f'{updated} pet(s) rejeitado(s).')
+    rejeitar_pets.short_description = 'Rejeitar pets selecionados'
+
+
+@admin.register(SolicitacaoAdocao)
+class SolicitacaoAdocaoAdmin(admin.ModelAdmin):
+    list_display = ('animal', 'usuario_interessado', 'status', 'data_solicitacao', 'data_aprovacao')
+    list_filter = ('status', 'data_solicitacao')
+    search_fields = ('animal__nome', 'usuario_interessado__user__username')
+    readonly_fields = ('data_solicitacao', 'data_aprovacao')
+    actions = ['aprovar_solicitacoes', 'rejeitar_solicitacoes']
+    
+    def aprovar_solicitacoes(self, request, queryset):
+        from django.utils import timezone
+        for solicitacao in queryset:
+            solicitacao.status = 'aprovada'
+            solicitacao.data_aprovacao = timezone.now()
+            solicitacao.save()
+            
+            # Marca animal como adotado
+            solicitacao.animal.status = 'adotado'
+            solicitacao.animal.save()
+        
+        self.message_user(request, f'{queryset.count()} solicitação(ões) aprovada(s).')
+    aprovar_solicitacoes.short_description = 'Aprovar solicitações selecionadas'
+    
+    def rejeitar_solicitacoes(self, request, queryset):
+        from django.utils import timezone
+        updated = queryset.update(status='rejeitada', data_aprovacao=timezone.now())
+        self.message_user(request, f'{updated} solicitação(ões) rejeitada(s).')
+    rejeitar_solicitacoes.short_description = 'Rejeitar solicitações selecionadas'
+
+
+@admin.register(Notificacao)
+class NotificacaoAdmin(admin.ModelAdmin):
+    list_display = ('usuario', 'tipo', 'titulo', 'lida', 'data_criacao')
+    list_filter = ('tipo', 'lida', 'data_criacao')
+    search_fields = ('titulo', 'mensagem', 'usuario__user__username')
+    readonly_fields = ('data_criacao',)
+    actions = ['marcar_como_lidas']
+    
+    def marcar_como_lidas(self, request, queryset):
+        updated = queryset.update(lida=True)
+        self.message_user(request, f'{updated} notificação(ões) marcada(s) como lida(s).')
+    marcar_como_lidas.short_description = 'Marcar como lidas'
