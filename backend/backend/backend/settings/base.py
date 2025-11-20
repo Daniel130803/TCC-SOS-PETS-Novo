@@ -129,7 +129,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR.parent.parent / 'TCC_SOS_Pets']
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR.parent.parent / 'media'
+MEDIA_ROOT = BASE_DIR / 'media'  # Dentro do /app no Docker
 
 # CORS (valores default mais permissivos no dev)
 CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False').lower() == 'true'

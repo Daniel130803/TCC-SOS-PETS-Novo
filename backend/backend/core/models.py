@@ -130,12 +130,23 @@ class Denuncia(models.Model):
         ('rejeitada', 'Rejeitada'),
     ]
     
+    CATEGORIA_CHOICES = [
+        ('maus_tratos', 'Maus-tratos'),
+        ('abandono', 'Abandono'),
+        ('acumulacao', 'Acumulação de Animais'),
+        ('animal_perdido', 'Animal Perdido'),
+        ('animal_ferido', 'Animal Ferido'),
+        ('outros', 'Outros'),
+    ]
+    
     usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, related_name='denuncias')
     moderador = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='denuncias_moderadas', verbose_name='Moderador')
     titulo = models.CharField(max_length=200, verbose_name='Título')
+    categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES, default='outros', verbose_name='Categoria')
     descricao = models.TextField(verbose_name='Descrição')
     localizacao = models.CharField(max_length=255, verbose_name='Localização')
-    imagem = models.ImageField(upload_to='denuncias/', blank=True, null=True, verbose_name='Imagem')
+    imagem = models.ImageField(upload_to='denuncias/', blank=True, null=True, verbose_name='Imagem Principal')
+    video = models.FileField(upload_to='denuncias/videos/', blank=True, null=True, verbose_name='Vídeo Principal')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
     observacoes_moderador = models.TextField(blank=True, null=True, verbose_name='Observações do Moderador')
     data_criacao = models.DateTimeField(auto_now_add=True, verbose_name='Data de Criação')
@@ -147,6 +158,59 @@ class Denuncia(models.Model):
     class Meta:
         verbose_name = "Denúncia"
         verbose_name_plural = "Denúncias"
+        ordering = ['-data_criacao']
+
+
+class DenunciaImagem(models.Model):
+    denuncia = models.ForeignKey(Denuncia, on_delete=models.CASCADE, related_name='imagens_adicionais')
+    imagem = models.ImageField(upload_to='denuncias/imagens/')
+    data_criacao = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Imagem de denúncia #{self.denuncia.id}"
+
+    class Meta:
+        verbose_name = "Imagem da Denúncia"
+        verbose_name_plural = "Imagens da Denúncia"
+        ordering = ['id']
+
+
+class DenunciaVideo(models.Model):
+    denuncia = models.ForeignKey(Denuncia, on_delete=models.CASCADE, related_name='videos_adicionais')
+    video = models.FileField(upload_to='denuncias/videos/')
+    data_criacao = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Vídeo de denúncia #{self.denuncia.id}"
+
+    class Meta:
+        verbose_name = "Vídeo da Denúncia"
+        verbose_name_plural = "Vídeos da Denúncia"
+        ordering = ['id']
+
+
+class DenunciaHistorico(models.Model):
+    TIPO_CHOICES = [
+        ('criacao', 'Denúncia Criada'),
+        ('status', 'Mudança de Status'),
+        ('comentario', 'Comentário Adicionado'),
+        ('atribuicao', 'Moderador Atribuído'),
+    ]
+    
+    denuncia = models.ForeignKey(Denuncia, on_delete=models.CASCADE, related_name='historico')
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, verbose_name='Tipo de Ação')
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Usuário')
+    status_anterior = models.CharField(max_length=20, blank=True, null=True, verbose_name='Status Anterior')
+    status_novo = models.CharField(max_length=20, blank=True, null=True, verbose_name='Status Novo')
+    comentario = models.TextField(blank=True, null=True, verbose_name='Comentário')
+    data_criacao = models.DateTimeField(auto_now_add=True, verbose_name='Data')
+    
+    def __str__(self):
+        return f"{self.get_tipo_display()} - Denúncia #{self.denuncia.id}"
+    
+    class Meta:
+        verbose_name = "Histórico da Denúncia"
+        verbose_name_plural = "Histórico das Denúncias"
         ordering = ['-data_criacao']
 
 

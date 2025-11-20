@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Animal, Adocao, Usuario, AnimalFoto, AnimalVideo, Denuncia
+from .models import Animal, Adocao, Usuario, AnimalFoto, AnimalVideo, Denuncia, DenunciaImagem, DenunciaVideo, DenunciaHistorico
 
 class AnimalSerializer(serializers.ModelSerializer):
     imagem_absolute = serializers.SerializerMethodField()
@@ -115,14 +115,20 @@ class UserUpdateSerializer(serializers.Serializer):
 class DenunciaSerializer(serializers.ModelSerializer):
     usuario_nome = serializers.CharField(source='usuario.user.get_full_name', read_only=True)
     moderador_nome = serializers.CharField(source='moderador.get_full_name', read_only=True)
+    categoria_display = serializers.CharField(source='get_categoria_display', read_only=True)
     imagem_url = serializers.SerializerMethodField()
+    video_url = serializers.SerializerMethodField()
+    imagens_urls = serializers.SerializerMethodField()
+    videos_urls = serializers.SerializerMethodField()
+    historico = serializers.SerializerMethodField()
 
     class Meta:
         model = Denuncia
         fields = [
-            'id', 'titulo', 'descricao', 'localizacao', 'imagem', 'imagem_url',
+            'id', 'titulo', 'categoria', 'categoria_display', 'descricao', 'localizacao', 
+            'imagem', 'video', 'imagem_url', 'video_url', 'imagens_urls', 'videos_urls',
             'status', 'usuario', 'usuario_nome', 'moderador', 'moderador_nome',
-            'observacoes_moderador', 'data_criacao', 'data_atualizacao'
+            'observacoes_moderador', 'data_criacao', 'data_atualizacao', 'historico'
         ]
         read_only_fields = ['usuario', 'moderador', 'observacoes_moderador', 'data_criacao', 'data_atualizacao']
 
@@ -134,6 +140,43 @@ class DenunciaSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(url)
             return url
         return None
+    
+    def get_video_url(self, obj):
+        request = self.context.get('request')
+        if obj.video and hasattr(obj.video, 'url'):
+            url = obj.video.url
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return None
+    
+    def get_imagens_urls(self, obj):
+        request = self.context.get('request')
+        urls = []
+        for img in obj.imagens_adicionais.all():
+            if img.imagem and hasattr(img.imagem, 'url'):
+                url = img.imagem.url
+                if request:
+                    urls.append(request.build_absolute_uri(url))
+                else:
+                    urls.append(url)
+        return urls
+    
+    def get_videos_urls(self, obj):
+        request = self.context.get('request')
+        urls = []
+        for vid in obj.videos_adicionais.all():
+            if vid.video and hasattr(vid.video, 'url'):
+                url = vid.video.url
+                if request:
+                    urls.append(request.build_absolute_uri(url))
+                else:
+                    urls.append(url)
+        return urls
+    
+    def get_historico(self, obj):
+        historico_qs = obj.historico.all().order_by('-data_criacao')
+        return DenunciaHistoricoSerializer(historico_qs, many=True).data
 
     def create(self, validated_data):
         # Associa automaticamente o usuário autenticado
@@ -142,4 +185,27 @@ class DenunciaSerializer(serializers.ModelSerializer):
             # Busca ou cria o perfil Usuario
             usuario, _ = Usuario.objects.get_or_create(user=request.user)
             validated_data['usuario'] = usuario
-        return super().create(validated_data)
+        
+        # Cria a denúncia
+        denuncia = super().create(validated_data)
+        
+        # Registra no histórico
+        DenunciaHistorico.objects.create(
+            denuncia=denuncia,
+            tipo='criacao',
+            usuario=request.user if request and request.user.is_authenticated else None,
+            comentario='Denúncia criada'
+        )
+        
+        return denuncia
+
+
+class DenunciaHistoricoSerializer(serializers.ModelSerializer):
+    usuario_nome = serializers.CharField(source='usuario.get_full_name', read_only=True)
+    tipo_display = serializers.CharField(source='get_tipo_display', read_only=True)
+    
+    class Meta:
+        model = DenunciaHistorico
+        fields = ['id', 'tipo', 'tipo_display', 'usuario', 'usuario_nome', 
+                  'status_anterior', 'status_novo', 'comentario', 'data_criacao']
+        read_only_fields = ['data_criacao']

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
-from .models import Animal, Adocao, Denuncia
+from .models import Animal, Adocao, Denuncia, DenunciaImagem, DenunciaVideo, DenunciaHistorico
 from .serializers import AnimalSerializer, AdocaoSerializer, DenunciaSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -100,15 +100,49 @@ class DenunciaViewSet(viewsets.ModelViewSet):
             if hasattr(self.request.user, 'usuario'):
                 qs = qs.filter(usuario=self.request.user.usuario)
         return qs
+    
+    def create(self, request, *args, **kwargs):
+        # Cria a denúncia principal
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        denuncia = serializer.save()
+        
+        # Processa múltiplas imagens adicionais
+        imagens = request.FILES.getlist('imagens_adicionais')
+        for imagem in imagens:
+            DenunciaImagem.objects.create(denuncia=denuncia, imagem=imagem)
+        
+        # Processa múltiplos vídeos adicionais
+        videos = request.FILES.getlist('videos_adicionais')
+        for video in videos:
+            DenunciaVideo.objects.create(denuncia=denuncia, video=video)
+        
+        # Retorna a denúncia com todas as mídias
+        output_serializer = self.get_serializer(denuncia)
+        headers = self.get_success_headers(output_serializer.data)
+        return Response(output_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
     def aprovar(self, request, pk=None):
         """Endpoint para admin aprovar uma denúncia"""
         denuncia = self.get_object()
+        status_anterior = denuncia.status
         denuncia.status = 'aprovada'
         denuncia.moderador = request.user
-        denuncia.observacoes_moderador = request.data.get('observacoes', '')
+        observacoes = request.data.get('observacoes', '')
+        denuncia.observacoes_moderador = observacoes
         denuncia.save()
+        
+        # Registra no histórico
+        DenunciaHistorico.objects.create(
+            denuncia=denuncia,
+            tipo='status',
+            usuario=request.user,
+            status_anterior=status_anterior,
+            status_novo='aprovada',
+            comentario=observacoes if observacoes else 'Denúncia aprovada'
+        )
+        
         serializer = self.get_serializer(denuncia)
         return Response(serializer.data)
 
@@ -116,10 +150,23 @@ class DenunciaViewSet(viewsets.ModelViewSet):
     def rejeitar(self, request, pk=None):
         """Endpoint para admin rejeitar uma denúncia"""
         denuncia = self.get_object()
+        status_anterior = denuncia.status
         denuncia.status = 'rejeitada'
         denuncia.moderador = request.user
-        denuncia.observacoes_moderador = request.data.get('observacoes', 'Denúncia rejeitada.')
+        observacoes = request.data.get('observacoes', 'Denúncia rejeitada.')
+        denuncia.observacoes_moderador = observacoes
         denuncia.save()
+        
+        # Registra no histórico
+        DenunciaHistorico.objects.create(
+            denuncia=denuncia,
+            tipo='status',
+            usuario=request.user,
+            status_anterior=status_anterior,
+            status_novo='rejeitada',
+            comentario=observacoes
+        )
+        
         serializer = self.get_serializer(denuncia)
         return Response(serializer.data)
 
@@ -127,10 +174,23 @@ class DenunciaViewSet(viewsets.ModelViewSet):
     def em_andamento(self, request, pk=None):
         """Endpoint para admin marcar denúncia como em andamento"""
         denuncia = self.get_object()
+        status_anterior = denuncia.status
         denuncia.status = 'em_andamento'
         denuncia.moderador = request.user
-        denuncia.observacoes_moderador = request.data.get('observacoes', 'Denúncia em análise.')
+        observacoes = request.data.get('observacoes', 'Denúncia em análise.')
+        denuncia.observacoes_moderador = observacoes
         denuncia.save()
+        
+        # Registra no histórico
+        DenunciaHistorico.objects.create(
+            denuncia=denuncia,
+            tipo='status',
+            usuario=request.user,
+            status_anterior=status_anterior,
+            status_novo='em_andamento',
+            comentario=observacoes
+        )
+        
         serializer = self.get_serializer(denuncia)
         return Response(serializer.data)
 
@@ -138,10 +198,44 @@ class DenunciaViewSet(viewsets.ModelViewSet):
     def resolver(self, request, pk=None):
         """Endpoint para admin marcar denúncia como resolvida"""
         denuncia = self.get_object()
+        status_anterior = denuncia.status
         denuncia.status = 'resolvida'
         denuncia.moderador = request.user
-        denuncia.observacoes_moderador = request.data.get('observacoes', 'Denúncia resolvida.')
+        observacoes = request.data.get('observacoes', 'Denúncia resolvida.')
+        denuncia.observacoes_moderador = observacoes
         denuncia.save()
+        
+        # Registra no histórico
+        DenunciaHistorico.objects.create(
+            denuncia=denuncia,
+            tipo='status',
+            usuario=request.user,
+            status_anterior=status_anterior,
+            status_novo='resolvida',
+            comentario=observacoes
+        )
+        
         serializer = self.get_serializer(denuncia)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def adicionar_comentario(self, request, pk=None):
+        """Endpoint para admin adicionar comentário interno"""
+        denuncia = self.get_object()
+        comentario = request.data.get('comentario', '')
+        
+        if not comentario:
+            return Response({'error': 'Comentário não pode ser vazio'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Registra no histórico
+        DenunciaHistorico.objects.create(
+            denuncia=denuncia,
+            tipo='comentario',
+            usuario=request.user,
+            comentario=comentario
+        )
+        
+        serializer = self.get_serializer(denuncia)
+        return Response(serializer.data)
+
 
