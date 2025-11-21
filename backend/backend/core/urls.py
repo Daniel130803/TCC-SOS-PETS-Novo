@@ -2,7 +2,8 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import (
     RegisterView, MeView, AnimalViewSet, AdocaoViewSet, DenunciaViewSet,
-    AnimalParaAdocaoViewSet, SolicitacaoAdocaoViewSet, NotificacaoViewSet
+    AnimalParaAdocaoViewSet, SolicitacaoAdocaoViewSet, NotificacaoViewSet,
+    MinhasSolicitacoesEnviadasView, SolicitacoesRecebidasView, MeusPetsCadastradosView
 )
 from .views_fotos import AnimalFotoUploadView
 from rest_framework.routers import DefaultRouter
@@ -21,5 +22,11 @@ urlpatterns = [
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/me/', MeView.as_view(), name='auth_me'),
     path('animais/<int:pk>/fotos/', AnimalFotoUploadView.as_view(), name='animal-fotos'),
+    
+    # Endpoints para página "Minhas Solicitações"
+    path('minhas-solicitacoes-enviadas/', MinhasSolicitacoesEnviadasView.as_view(), name='minhas-solicitacoes-enviadas'),
+    path('solicitacoes-recebidas/', SolicitacoesRecebidasView.as_view(), name='solicitacoes-recebidas'),
+    path('meus-pets-cadastrados/', MeusPetsCadastradosView.as_view(), name='meus-pets-cadastrados'),
+    
     path('', include(router.urls)),
 ]

@@ -134,6 +134,12 @@ class AnimalParaAdocao(models.Model):
         ('grande', 'Grande (acima de 25kg)'),
     ]
     
+    SEXO_CHOICES = [
+        ('M', 'Macho'),
+        ('F', 'Fêmea'),
+        ('N', 'Não informado'),
+    ]
+    
     STATUS_CHOICES = [
         ('pendente', 'Aguardando Aprovação'),
         ('aprovado', 'Aprovado'),
@@ -146,7 +152,13 @@ class AnimalParaAdocao(models.Model):
     nome = models.CharField(max_length=100, verbose_name='Nome do Animal')
     especie = models.CharField(max_length=20, choices=ESPECIE_CHOICES, verbose_name='Espécie')
     porte = models.CharField(max_length=10, choices=PORTE_CHOICES, verbose_name='Porte')
+    sexo = models.CharField(max_length=1, choices=SEXO_CHOICES, default='N', verbose_name='Sexo')
+    cor = models.CharField(max_length=50, verbose_name='Cor', blank=True, null=True)
+    idade = models.CharField(max_length=50, verbose_name='Idade', blank=True, null=True, help_text='Ex: 2 anos, 6 meses, filhote')
     descricao = models.TextField(verbose_name='Descrição do Animal', help_text='Descreva o temperamento, cuidados especiais, etc.')
+    temperamento = models.TextField(blank=True, null=True, verbose_name='Temperamento', help_text='Ex: dócil, brincalhão, calmo')
+    historico_saude = models.TextField(blank=True, null=True, verbose_name='Histórico de Saúde', help_text='Vacinas, castração, doenças, etc.')
+    caracteristicas_especiais = models.TextField(blank=True, null=True, verbose_name='Características Especiais')
     
     # Localização (endereço oculto até aprovação de adoção)
     estado = models.CharField(max_length=2, verbose_name='Estado')

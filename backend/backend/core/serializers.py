@@ -219,8 +219,10 @@ class AnimalParaAdocaoSerializer(serializers.ModelSerializer):
     usuario_doador_nome = serializers.CharField(source='usuario_doador.user.get_full_name', read_only=True)
     especie_display = serializers.CharField(source='get_especie_display', read_only=True)
     porte_display = serializers.CharField(source='get_porte_display', read_only=True)
+    sexo_display = serializers.CharField(source='get_sexo_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     imagem_principal_url = serializers.SerializerMethodField()
+    imagens_adicionais = serializers.SerializerMethodField()
     # Endereço é oculto por padrão, será revelado apenas após aprovação da adoção
     endereco_completo = serializers.SerializerMethodField()
     
@@ -228,9 +230,11 @@ class AnimalParaAdocaoSerializer(serializers.ModelSerializer):
         model = AnimalParaAdocao
         fields = [
             'id', 'usuario_doador', 'usuario_doador_nome', 'nome', 'especie', 
-            'especie_display', 'porte', 'porte_display', 'descricao', 'estado', 
-            'cidade', 'endereco_completo', 'telefone', 'email', 'imagem_principal',
-            'imagem_principal_url', 'status', 'status_display', 'data_cadastro', 
+            'especie_display', 'porte', 'porte_display', 'sexo', 'sexo_display',
+            'cor', 'idade', 'descricao', 'temperamento', 'historico_saude',
+            'caracteristicas_especiais', 'estado', 'cidade', 'endereco_completo', 
+            'telefone', 'email', 'imagem_principal', 'imagem_principal_url',
+            'imagens_adicionais', 'status', 'status_display', 'data_cadastro', 
             'data_aprovacao'
         ]
         read_only_fields = ['usuario_doador', 'status', 'data_cadastro', 'data_aprovacao']
@@ -243,6 +247,10 @@ class AnimalParaAdocaoSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(url)
             return url
         return None
+    
+    def get_imagens_adicionais(self, obj):
+        # Placeholder para futuras imagens adicionais
+        return []
     
     def get_endereco_completo(self, obj):
         # Oculta endereço por padrão
@@ -258,6 +266,11 @@ class AnimalParaAdocaoSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             usuario, _ = Usuario.objects.get_or_create(user=request.user)
             validated_data['usuario_doador'] = usuario
+        
+        # Se selecionou "Outro" na cor, usa o valor do campo cor_outro
+        cor_outro = request.data.get('cor_outro') if request else None
+        if validated_data.get('cor') == 'Outro' and cor_outro:
+            validated_data['cor'] = cor_outro
         
         return super().create(validated_data)
 

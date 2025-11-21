@@ -387,7 +387,7 @@ class SolicitacaoAdocaoViewSet(viewsets.ModelViewSet):
             tipo='adocao_aprovada',
             titulo='Adoção aprovada!',
             mensagem=f'Sua solicitação para adotar "{animal.nome}" foi aprovada! Entre em contato com o doador.',
-            link=f'/perfil/?tab=adocoes',
+            link=f'/minhas-solicitacoes/',
             contato_telefone=telefone_doador,
             contato_email=email_doador,
             contato_endereco=endereco_doador
@@ -400,7 +400,7 @@ class SolicitacaoAdocaoViewSet(viewsets.ModelViewSet):
             tipo='adocao_aprovada',
             titulo='Solicitação de adoção aprovada!',
             mensagem=f'A solicitação de adoção de "{animal.nome}" foi aprovada. Entre em contato com o interessado.',
-            link=f'/perfil/?tab=pets',
+            link=f'/minhas-solicitacoes/',
             contato_telefone=telefone_interessado,
             contato_email=email_interessado
         )
@@ -418,16 +418,45 @@ class SolicitacaoAdocaoViewSet(viewsets.ModelViewSet):
         solicitacao = self.get_object()
         solicitacao.status = 'rejeitada'
         solicitacao.data_aprovacao = timezone.now()
+        motivo = request.data.get('motivo', 'Não especificado')
         solicitacao.save()
         
         # Notifica o interessado
-        motivo = request.data.get('motivo', 'Não especificado')
         Notificacao.objects.create(
             usuario=solicitacao.usuario_interessado,
             tipo='adocao_rejeitada',
             titulo='Solicitação rejeitada',
             mensagem=f'Sua solicitação para adotar "{solicitacao.animal.nome}" foi rejeitada. Motivo: {motivo}',
+            link=f'/minhas-solicitacoes/'
         )
+        
+        serializer = self.get_serializer(solicitacao)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'])
+    def cancelar(self, request, pk=None):
+        """Usuário cancela sua própria solicitação"""
+        from django.utils import timezone
+        
+        solicitacao = self.get_object()
+        
+        # Verifica se o usuário é o interessado
+        if not hasattr(request.user, 'usuario') or solicitacao.usuario_interessado != request.user.usuario:
+            return Response(
+                {'detail': 'Você não tem permissão para cancelar esta solicitação.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Só pode cancelar se estiver pendente
+        if solicitacao.status != 'pendente':
+            return Response(
+                {'detail': 'Apenas solicitações pendentes podem ser canceladas.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        solicitacao.status = 'cancelada'
+        solicitacao.data_aprovacao = timezone.now()
+        solicitacao.save()
         
         serializer = self.get_serializer(solicitacao)
         return Response(serializer.data)
@@ -441,7 +470,17 @@ class NotificacaoViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # Usuários veem apenas suas próprias notificações
         if hasattr(self.request.user, 'usuario'):
-            return Notificacao.objects.filter(usuario=self.request.user.usuario).order_by('-data_criacao')
+            qs = Notificacao.objects.filter(usuario=self.request.user.usuario).order_by('-data_criacao')
+            
+            # Filtro por lida/não lida
+            lida = self.request.query_params.get('lida', None)
+            if lida is not None:
+                if lida.lower() == 'true':
+                    qs = qs.filter(lida=True)
+                elif lida.lower() == 'false':
+                    qs = qs.filter(lida=False)
+            
+            return qs
         return Notificacao.objects.none()
     
     @action(detail=True, methods=['post'])
@@ -466,6 +505,146 @@ class NotificacaoViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Todas as notificações foram marcadas como lidas.'})
         
         return Response({'detail': 'Usuário sem perfil.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Novos ViewSets para "Minhas Solicitações"
+class MinhasSolicitacoesEnviadasView(APIView):
+    """Lista solicitações de adoção enviadas pelo usuário (como interessado)"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        if not hasattr(request.user, 'usuario'):
+            return Response([], status=status.HTTP_200_OK)
+        
+        usuario = request.user.usuario
+        solicitacoes = SolicitacaoAdocao.objects.filter(
+            usuario_interessado=usuario
+        ).select_related('animal', 'animal__usuario_doador').order_by('-data_solicitacao')
+        
+        data = []
+        for sol in solicitacoes:
+            animal = sol.animal
+            doador = animal.usuario_doador
+            
+            item = {
+                'id': sol.id,
+                'animal_id': animal.id,
+                'animal_nome': animal.nome,
+                'animal_especie': animal.get_especie_display(),
+                'animal_porte': animal.get_porte_display(),
+                'animal_sexo': animal.get_sexo_display() if hasattr(animal, 'sexo') else None,
+                'animal_cor': animal.cor if hasattr(animal, 'cor') else None,
+                'animal_idade': animal.idade if hasattr(animal, 'idade') else None,
+                'animal_imagem': request.build_absolute_uri(animal.imagem_principal.url) if animal.imagem_principal else None,
+                'status': sol.status,
+                'mensagem': sol.mensagem,
+                'data_solicitacao': sol.data_solicitacao,
+                'doador_nome': doador.user.get_full_name() or doador.user.username,
+                'doador_telefone': None,
+                'doador_email': None,
+                'doador_endereco': None,
+                'motivo_rejeicao': None
+            }
+            
+            # Se aprovada, revela dados de contato do doador
+            if sol.status == 'aprovada':
+                item['doador_telefone'] = animal.telefone or doador.telefone or None
+                item['doador_email'] = animal.email or doador.user.email or None
+                item['doador_endereco'] = animal.endereco_completo or None
+            
+            data.append(item)
+        
+        return Response({'results': data}, status=status.HTTP_200_OK)
+
+
+class SolicitacoesRecebidasView(APIView):
+    """Lista solicitações de adoção recebidas para os pets do usuário (como doador)"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        if not hasattr(request.user, 'usuario'):
+            return Response([], status=status.HTTP_200_OK)
+        
+        usuario = request.user.usuario
+        # Busca solicitações para pets cadastrados pelo usuário
+        solicitacoes = SolicitacaoAdocao.objects.filter(
+            animal__usuario_doador=usuario
+        ).select_related('animal', 'usuario_interessado').order_by('-data_solicitacao')
+        
+        data = []
+        for sol in solicitacoes:
+            animal = sol.animal
+            interessado = sol.usuario_interessado
+            
+            item = {
+                'id': sol.id,
+                'animal_id': animal.id,
+                'animal_nome': animal.nome,
+                'animal_especie': animal.get_especie_display(),
+                'animal_porte': animal.get_porte_display(),
+                'animal_sexo': animal.get_sexo_display() if hasattr(animal, 'sexo') else None,
+                'animal_cor': animal.cor if hasattr(animal, 'cor') else None,
+                'animal_idade': animal.idade if hasattr(animal, 'idade') else None,
+                'animal_imagem': request.build_absolute_uri(animal.imagem_principal.url) if animal.imagem_principal else None,
+                'status': sol.status,
+                'mensagem': sol.mensagem,
+                'data_solicitacao': sol.data_solicitacao,
+                'interessado_nome': interessado.user.get_full_name() or interessado.user.username,
+                'interessado_telefone': None,
+                'interessado_email': None
+            }
+            
+            # Se aprovada, revela dados de contato do interessado
+            if sol.status == 'aprovada':
+                item['interessado_telefone'] = interessado.telefone or None
+                item['interessado_email'] = interessado.user.email or None
+            
+            data.append(item)
+        
+        return Response({'results': data}, status=status.HTTP_200_OK)
+
+
+class MeusPetsCadastradosView(APIView):
+    """Lista pets cadastrados pelo usuário com contagem de solicitações"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        if not hasattr(request.user, 'usuario'):
+            return Response([], status=status.HTTP_200_OK)
+        
+        usuario = request.user.usuario
+        pets = AnimalParaAdocao.objects.filter(
+            usuario_doador=usuario
+        ).order_by('-data_cadastro')
+        
+        data = []
+        for pet in pets:
+            # Conta solicitações
+            total_solicitacoes = SolicitacaoAdocao.objects.filter(animal=pet).count()
+            solicitacoes_pendentes = SolicitacaoAdocao.objects.filter(animal=pet, status='pendente').count()
+            
+            item = {
+                'id': pet.id,
+                'nome': pet.nome,
+                'especie_display': pet.get_especie_display(),
+                'porte_display': pet.get_porte_display() if pet.porte else 'Não informado',
+                'sexo': pet.sexo if hasattr(pet, 'sexo') else None,
+                'sexo_display': pet.get_sexo_display() if hasattr(pet, 'sexo') else None,
+                'cor': pet.cor if hasattr(pet, 'cor') else None,
+                'idade': pet.idade if hasattr(pet, 'idade') else None,
+                'descricao': pet.descricao,
+                'cidade': pet.cidade,
+                'estado': pet.estado,
+                'status': pet.status,
+                'imagem_principal_url': request.build_absolute_uri(pet.imagem_principal.url) if pet.imagem_principal else None,
+                'data_cadastro': pet.data_cadastro,
+                'total_solicitacoes': total_solicitacoes,
+                'solicitacoes_pendentes': solicitacoes_pendentes
+            }
+            
+            data.append(item)
+        
+        return Response({'results': data}, status=status.HTTP_200_OK)
 
 
 
