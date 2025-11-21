@@ -1,10 +1,15 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pets Perdidos - S.O.S Pets</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="{% static 'Estetica_site/Logo.png' %}">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
@@ -13,7 +18,26 @@
         /* Reset de margin/padding para main */
         main {
             padding: 0;
-            margin: 0;
+            margin: 0 auto;
+            max-width: 100%;
+            width: 100%;
+        }
+        
+        /* Garantir que os badges fiquem dentro dos cards */
+        .animal-card {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .card-image-container {
+            position: relative !important;
+            overflow: hidden;
+        }
+        
+        .status-badge,
+        .reward-badge {
+            position: absolute !important;
+            z-index: 2 !important;
         }
         
         /* Estilos específicos para pets perdidos */
@@ -22,19 +46,24 @@
             color: white;
             text-align: center;
             padding: 60px 20px;
-            margin: 0 0 30px 0;
+            margin: 0 auto 30px;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .lost-hero h1 {
             font-size: 2.5em;
             margin: 0 0 15px 0;
             font-family: 'Poppins', sans-serif;
+            color: white;
         }
         
         .lost-hero p {
             font-size: 1.1em;
-            margin: 0;
-            opacity: 0.95;
+            margin: 0 auto;
+            opacity: 1;
+            color: white;
+            max-width: 800px;
         }
         
         .lost-hero-buttons {
@@ -88,20 +117,28 @@
             background: white;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: calc(100% - 40px);
+            margin-left: auto;
+            margin-right: auto;
         }
         
         .filters-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            align-items: end;
+        }
+        
+        .filter-group {
+            text-align: left;
         }
         
         .filter-group label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 600;
             color: #333;
-            font-size: 0.9em;
+            font-size: 0.95em;
         }
         
         .filter-group select,
@@ -120,11 +157,77 @@
             border-color: #4CAF50;
         }
         
+        /* === ESTILOS DO MAPA NOS MODAIS === */
+        .modal-map-container {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #4CAF50;
+        }
+        
+        #location-picker-map-lost,
+        #location-picker-map-found {
+            height: 350px !important;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            margin-top: 10px;
+            z-index: 1;
+        }
+        
+        .map-header-modal {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .map-header-modal h4 {
+            margin: 0;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1em;
+        }
+        
+        .map-info-modal {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .btn-localizar-modal {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        
+        .btn-localizar-modal:hover {
+            background: #1976D2;
+            transform: scale(1.05);
+        }
+        
         #map-container {
             width: calc(100% - 40px);
             max-width: 1200px;
             height: 600px;
             margin: 0 auto 30px;
+            margin-left: auto;
+            margin-right: auto;
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -133,91 +236,17 @@
         #pets-list-container {
             max-width: 1200px;
             margin: 0 auto 40px;
+            margin-left: auto;
+            margin-right: auto;
             padding: 0 20px;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
         }
         
-        .pet-card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        /* Usa as classes .animal-card do style.css */
+        .animal-card {
             cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .pet-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
-        .pet-card-image {
-            position: relative;
-            height: 250px;
-            overflow: hidden;
-        }
-        
-        .pet-card-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .reward-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #FF9800;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.9em;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        
-        .pet-card-content {
-            padding: 20px;
-        }
-        
-        .pet-card-content h3 {
-            color: #d32f2f;
-            margin: 0 0 10px 0;
-            font-size: 1.4em;
-            font-family: 'Poppins', sans-serif;
-        }
-        
-        .pet-card-content p {
-            margin: 8px 0;
-            color: #666;
-            font-size: 0.95em;
-        }
-        
-        .pet-card-content i {
-            margin-right: 8px;
-            color: #d32f2f;
-            width: 18px;
-            text-align: center;
-        }
-        
-        .btn-view-details {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #d32f2f, #f44336);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: all 0.3s;
-            font-size: 1em;
-        }
-        
-        .btn-view-details:hover {
-            background: linear-gradient(135deg, #c62828, #d32f2f);
         }
         
         #no-results-message {
@@ -269,19 +298,45 @@
             position: relative;
         }
         
-        .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #f44336;
+        .modal-header {
+            background: linear-gradient(135deg, #d32f2f, #c62828);
             color: white;
-            border: none;
+            padding: 20px 30px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
             width: 35px;
             height: 35px;
             border-radius: 50%;
-            font-size: 1.5em;
+            font-size: 1.2em;
             cursor: pointer;
-            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
         }
         
         .modal-form {
@@ -587,16 +642,6 @@
         .modal-overlay.show {
             display: flex !important;
         }
-        
-        @media (max-width: 768px) {
-            .pet-details-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 <body>
@@ -635,7 +680,7 @@
                     <label for="estado-filter">
                         <i class="fas fa-map-marker-alt"></i> Estado
                     </label>
-                    <select id="estado-filter">
+                    <select id="estado-filter" name="estado" aria-label="Filtrar por estado">
                         <option value="">Todos os estados</option>
                     </select>
                 </div>
@@ -643,13 +688,15 @@
                     <label for="cidade-filter">
                         <i class="fas fa-city"></i> Cidade
                     </label>
-                    <input type="text" id="cidade-filter" placeholder="Digite o nome da cidade">
+                    <select id="cidade-filter" name="cidade" aria-label="Filtrar por cidade" disabled>
+                        <option value="">Escolha um estado</option>
+                    </select>
                 </div>
                 <div class="filter-group">
                     <label for="especie-filter">
                         <i class="fas fa-paw"></i> Espécie
                     </label>
-                    <select id="especie-filter">
+                    <select id="especie-filter" name="especie" aria-label="Filtrar por espécie">
                         <option value="">Todas</option>
                         <option value="cachorro">Cachorro</option>
                         <option value="gato">Gato</option>
@@ -669,11 +716,15 @@
     </main>
 
     <!-- Modal Perdi meu Pet -->
-    <div id="lost-pet-modal" class="modal-overlay">
+    <div id="lost-pet-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
-            <button class="modal-close" id="btn-close-lost-pet-modal">&times;</button>
+            <div class="modal-header">
+                <h3><i class="fas fa-bullhorn"></i> Cadastrar Pet Perdido</h3>
+                <button class="modal-close" onclick="fecharModalLost()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
             <form id="lost-pet-form" class="modal-form" enctype="multipart/form-data">
-                <h2><i class="fas fa-bullhorn"></i> Cadastrar Pet Perdido</h2>
                 <p style="color: #666; margin-bottom: 25px;">Preencha os dados para criar um alerta e ajudar a encontrar seu pet</p>
                 
                 <div class="form-row">
@@ -745,13 +796,32 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Selecione o Local no Mapa *</label>
-                    <p style="font-size: 0.9em; color: #666;">Clique no mapa para marcar onde o pet foi perdido</p>
-                    <div id="location-picker-map-lost"></div>
+                    <label>Localização no Mapa *</label>
+                    <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">Clique no botão abaixo para ativar o mapa e marcar onde o pet foi perdido</p>
+                    <button type="button" class="btn-localizar-modal" id="btn-mostrar-mapa-lost">
+                        <i class="fas fa-map-marked-alt"></i> Localizar no Mapa
+                    </button>
+                    <div id="map-container-lost" class="modal-map-container" style="display: none;">
+                        <div class="map-header-modal">
+                            <h4>
+                                <i class="fas fa-map-pin" style="color: #d32f2f;"></i>
+                                Ajuste a localização exata onde o pet foi perdido
+                            </h4>
+                        </div>
+                        <div id="location-picker-map-lost"></div>
+                        <div class="map-info-modal">
+                            <i class="fas fa-info-circle" style="color: #2196F3;"></i>
+                            <strong>Dica:</strong> Arraste o marcador vermelho para ajustar a localização exata ou clique no mapa.
+                            <br>
+                            <span id="coordenadas-display-lost" style="font-weight: 600; color: #d32f2f;"></span>
+                        </div>
+                    </div>
                 </div>
 
                 <input type="hidden" id="lost-latitude" name="latitude" required>
                 <input type="hidden" id="lost-longitude" name="longitude" required>
+                <input type="hidden" name="ativo" value="true">
+                <input type="hidden" name="status" value="perdido">
 
                 <div class="form-row">
                     <div class="form-group">
@@ -795,9 +865,9 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="lost-oferece-recompensa">
+                        <label>
                             <input type="checkbox" id="lost-oferece-recompensa" name="oferece_recompensa">
-                            Oferece recompensa
+                            <span>Oferece recompensa</span>
                         </label>
                     </div>
                     <div class="form-group" id="recompensa-valor-group" style="display: none;">
@@ -824,11 +894,15 @@
     </div>
 
     <!-- Modal Encontrei um Pet -->
-    <div id="found-pet-modal" class="modal-overlay">
+    <div id="found-pet-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
-            <button class="modal-close" id="btn-close-found-pet-modal">&times;</button>
+            <div class="modal-header">
+                <h3><i class="fas fa-hand-holding-heart"></i> Reportar Pet Encontrado</h3>
+                <button class="modal-close" onclick="fecharModalFound()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
             <form id="found-pet-form" class="modal-form" enctype="multipart/form-data">
-                <h2><i class="fas fa-hand-holding-heart"></i> Reportar Pet Encontrado</h2>
                 <p style="color: #666; margin-bottom: 25px;">Obrigado por ajudar! Preencha os dados para tentarmos encontrar o dono</p>
                 
                 <div class="form-group">
@@ -905,13 +979,33 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Selecione o Local no Mapa *</label>
-                    <p style="font-size: 0.9em; color: #666;">Clique no mapa para marcar onde o pet foi encontrado</p>
-                    <div id="location-picker-map-found"></div>
+                    <label>Localização no Mapa *</label>
+                    <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
+                        Clique no botão abaixo para ativar o mapa e marcar onde o pet foi encontrado
+                    </p>
+                    <button type="button" class="btn-localizar-modal" id="btn-mostrar-mapa-found">
+                        <i class="fas fa-map-marked-alt"></i> Localizar no Mapa
+                    </button>
+                    <div id="map-container-found" class="modal-map-container" style="display: none;">
+                        <div class="map-header-modal">
+                            <h4>
+                                <i class="fas fa-map-pin" style="color: #4CAF50;"></i>
+                                Ajuste a localização exata onde o pet foi encontrado
+                            </h4>
+                        </div>
+                        <div id="location-picker-map-found"></div>
+                        <div class="map-info-modal">
+                            <i class="fas fa-info-circle" style="color: #2196F3;"></i>
+                            <strong>Dica:</strong> Arraste o marcador verde para ajustar a localização exata ou clique no mapa.
+                            <br>
+                            <span id="coordenadas-display-found" style="font-weight: 600; color: #4CAF50;"></span>
+                        </div>
+                    </div>
                 </div>
 
                 <input type="hidden" id="found-latitude" name="latitude" required>
                 <input type="hidden" id="found-longitude" name="longitude" required>
+                <input type="hidden" name="status" value="encontrado">
 
                 <div class="form-row">
                     <div class="form-group">
@@ -940,7 +1034,7 @@
                 <div class="form-group">
                     <label>
                         <input type="checkbox" id="found-pet-com-usuario" name="pet_com_usuario" checked>
-                        O pet está comigo
+                        <span>O pet está comigo</span>
                     </label>
                 </div>
 
@@ -967,7 +1061,7 @@
     </div>
 
     <!-- Modal de Detalhes do Pet -->
-    <div id="pet-details-modal" class="modal-overlay">
+    <div id="pet-details-modal" class="modal-overlay" style="display: none;">
         <div id="pet-details-content" class="modal-content">
             <!-- Conteúdo será inserido dinamicamente -->
         </div>
@@ -994,10 +1088,94 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-    <script src="user_session.js" defer></script>
-    <script src="animais-perdidos.js"></script>
+    <script src="{% static 'user_session.js' %}" defer></script>
+    <script src="{% static 'animais-perdidos.js' %}"></script>
     
     <script>
+        // ===== CONTROLE DOS MODAIS =====
+        const modalLost = document.getElementById('lost-pet-modal');
+        const modalFound = document.getElementById('found-pet-modal');
+        const btnOpenLost = document.getElementById('btn-open-lost-pet-modal');
+        const btnOpenFound = document.getElementById('btn-open-found-pet-modal');
+        const formLost = document.getElementById('lost-pet-form');
+        const formFound = document.getElementById('found-pet-form');
+        
+        // Abre modal "Perdi meu Pet"
+        if(btnOpenLost){
+            btnOpenLost.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🐾 Abrindo modal Perdi meu Pet');
+                if(modalLost){
+                    modalLost.style.cssText = 'display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; z-index: 99999 !important; background: rgba(0, 0, 0, 0.7) !important; justify-content: center !important; align-items: center !important; backdrop-filter: blur(4px) !important; opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; overflow-y: auto !important;';
+                    document.body.style.overflow = 'hidden';
+                    window.scrollTo(0, 0);
+                    console.log('✅ Modal Perdi meu Pet aberto');
+                }
+            });
+        }
+        
+        // Abre modal "Encontrei um Pet"
+        if(btnOpenFound){
+            btnOpenFound.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🐾 Abrindo modal Encontrei um Pet');
+                if(modalFound){
+                    modalFound.style.cssText = 'display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; z-index: 99999 !important; background: rgba(0, 0, 0, 0.7) !important; justify-content: center !important; align-items: center !important; backdrop-filter: blur(4px) !important; opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; overflow-y: auto !important;';
+                    document.body.style.overflow = 'hidden';
+                    window.scrollTo(0, 0);
+                    console.log('✅ Modal Encontrei um Pet aberto');
+                }
+            });
+        }
+        
+        // Fecha modal "Perdi meu Pet"
+        window.fecharModalLost = function(){
+            console.log('🚪 Fechando modal Perdi meu Pet');
+            if(modalLost){
+                modalLost.style.display = 'none';
+                document.body.style.overflow = '';
+                if(formLost) formLost.reset();
+                // Esconder container do mapa
+                const mapContainer = document.getElementById('map-container-lost');
+                if(mapContainer) mapContainer.style.display = 'none';
+                console.log('✅ Modal fechado');
+            }
+        };
+        
+        // Fecha modal "Encontrei um Pet"
+        window.fecharModalFound = function(){
+            console.log('🚪 Fechando modal Encontrei um Pet');
+            if(modalFound){
+                modalFound.style.display = 'none';
+                document.body.style.overflow = '';
+                if(formFound) formFound.reset();
+                // Esconder container do mapa
+                const mapContainer = document.getElementById('map-container-found');
+                if(mapContainer) mapContainer.style.display = 'none';
+                console.log('✅ Modal fechado');
+            }
+        };
+        
+        // Fecha ao clicar fora do modal
+        if(modalLost){
+            modalLost.addEventListener('click', (e) => {
+                if(e.target === modalLost){
+                    fecharModalLost();
+                }
+            });
+        }
+        
+        if(modalFound){
+            modalFound.addEventListener('click', (e) => {
+                if(e.target === modalFound){
+                    fecharModalFound();
+                }
+            });
+        }
+        
+        // ===== OUTROS SCRIPTS =====
         // Toggle de recompensa
         document.getElementById('lost-oferece-recompensa')?.addEventListener('change', function() {
             document.getElementById('recompensa-valor-group').style.display = this.checked ? 'block' : 'none';
