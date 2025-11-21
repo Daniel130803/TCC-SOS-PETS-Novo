@@ -4,7 +4,7 @@ from .views import (
     RegisterView, MeView, AnimalViewSet, AdocaoViewSet, DenunciaViewSet,
     AnimalParaAdocaoViewSet, SolicitacaoAdocaoViewSet, NotificacaoViewSet,
     MinhasSolicitacoesEnviadasView, SolicitacoesRecebidasView, MeusPetsCadastradosView,
-    ContatoViewSet
+    ContatoViewSet, PetPerdidoViewSet, ReportePetEncontradoViewSet
 )
 from .views_fotos import AnimalFotoUploadView
 from rest_framework.routers import DefaultRouter
@@ -17,6 +17,8 @@ router.register(r'animais-adocao', AnimalParaAdocaoViewSet, basename='animal-ado
 router.register(r'solicitacoes-adocao', SolicitacaoAdocaoViewSet, basename='solicitacao-adocao')
 router.register(r'notificacoes', NotificacaoViewSet, basename='notificacao')
 router.register(r'contatos', ContatoViewSet, basename='contato')
+router.register(r'pets-perdidos', PetPerdidoViewSet, basename='pet-perdido')
+router.register(r'pets-encontrados', ReportePetEncontradoViewSet, basename='pet-encontrado')
 
 urlpatterns = [
     path('auth/register/', RegisterView.as_view(), name='auth-register'),

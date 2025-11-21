@@ -354,28 +354,211 @@ class DenunciaHistorico(models.Model):
 
 
 # ===== ANIMAL PERDIDO =====
-class AnimalPerdido(models.Model):
+class PetPerdido(models.Model):
+    """Pet que foi perdido pelo dono e está sendo procurado"""
     STATUS_CHOICES = [
         ('perdido', 'Perdido'),
         ('encontrado', 'Encontrado'),
+        ('cancelado', 'Cancelado'),
     ]
     
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='animais_perdidos')
-    nome = models.CharField(max_length=100)
-    descricao = models.TextField()
-    localizacao = models.CharField(max_length=255)
-    imagem = models.ImageField(upload_to='perdidos/')
-    data_perdido = models.DateField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='perdido')
-    data_criacao = models.DateTimeField(auto_now_add=True)
+    ESPECIE_CHOICES = [
+        ('cachorro', 'Cachorro'),
+        ('gato', 'Gato'),
+        ('outro', 'Outro'),
+    ]
+    
+    PORTE_CHOICES = [
+        ('pequeno', 'Pequeno'),
+        ('medio', 'Médio'),
+        ('grande', 'Grande'),
+    ]
+    
+    SEXO_CHOICES = [
+        ('M', 'Macho'),
+        ('F', 'Fêmea'),
+        ('N', 'Não informado'),
+    ]
+    
+    # Dados do usuário que perdeu o pet
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='pets_perdidos', verbose_name='Dono do Pet')
+    
+    # Características do pet
+    nome = models.CharField(max_length=100, verbose_name='Nome do Pet')
+    especie = models.CharField(max_length=20, choices=ESPECIE_CHOICES, verbose_name='Espécie')
+    raca = models.CharField(max_length=100, blank=True, null=True, verbose_name='Raça')
+    cor = models.CharField(max_length=100, verbose_name='Cor/Pelagem')
+    porte = models.CharField(max_length=10, choices=PORTE_CHOICES, verbose_name='Porte')
+    sexo = models.CharField(max_length=1, choices=SEXO_CHOICES, default='N', verbose_name='Sexo')
+    idade_aproximada = models.CharField(max_length=50, blank=True, null=True, verbose_name='Idade Aproximada')
+    caracteristicas_distintivas = models.TextField(verbose_name='Características Distintivas', help_text='Manchas, cicatrizes, coleira, etc.')
+    
+    # Informações da perda
+    descricao = models.TextField(verbose_name='Descrição Detalhada', help_text='Conte o que aconteceu e onde o pet foi visto pela última vez')
+    data_perda = models.DateField(verbose_name='Data da Perda')
+    hora_perda = models.TimeField(blank=True, null=True, verbose_name='Hora Aproximada')
+    
+    # Localização (coordenadas para exibir no mapa)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, verbose_name='Latitude')
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, verbose_name='Longitude')
+    endereco = models.CharField(max_length=255, verbose_name='Endereço Aproximado')
+    bairro = models.CharField(max_length=100, verbose_name='Bairro')
+    cidade = models.CharField(max_length=100, verbose_name='Cidade')
+    estado = models.CharField(max_length=2, verbose_name='Estado')
+    
+    # Contato
+    telefone_contato = models.CharField(max_length=15, verbose_name='Telefone para Contato')
+    email_contato = models.EmailField(verbose_name='E-mail para Contato')
+    whatsapp = models.CharField(max_length=15, blank=True, null=True, verbose_name='WhatsApp')
+    
+    # Recompensa
+    oferece_recompensa = models.BooleanField(default=False, verbose_name='Oferece Recompensa')
+    valor_recompensa = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name='Valor da Recompensa')
+    
+    # Mídia
+    imagem_principal = models.ImageField(upload_to='pets_perdidos/', verbose_name='Foto Principal')
+    
+    # Status e controle
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='perdido', verbose_name='Status')
+    ativo = models.BooleanField(default=True, verbose_name='Ativo no Mapa')
+    visualizacoes = models.IntegerField(default=0, verbose_name='Visualizações')
+    data_criacao = models.DateTimeField(auto_now_add=True, verbose_name='Data de Cadastro')
+    data_atualizacao = models.DateTimeField(auto_now=True, verbose_name='Última Atualização')
+    data_encontrado = models.DateTimeField(blank=True, null=True, verbose_name='Data que foi Encontrado')
     
     def __str__(self):
-        return f"{self.nome} - {self.get_status_display()}"
+        return f"{self.nome} ({self.get_especie_display()}) - {self.cidade}/{self.estado}"
     
     class Meta:
-        verbose_name = "Animal Perdido"
-        verbose_name_plural = "Animais Perdidos"
+        verbose_name = "Pet Perdido"
+        verbose_name_plural = "Pets Perdidos"
         ordering = ['-data_criacao']
+        indexes = [
+            models.Index(fields=['status', 'ativo']),
+            models.Index(fields=['cidade', 'estado']),
+            models.Index(fields=['latitude', 'longitude']),
+        ]
+
+
+class PetPerdidoFoto(models.Model):
+    """Fotos adicionais do pet perdido"""
+    pet_perdido = models.ForeignKey(PetPerdido, on_delete=models.CASCADE, related_name='fotos_adicionais')
+    imagem = models.ImageField(upload_to='pets_perdidos/fotos/')
+    descricao = models.CharField(max_length=200, blank=True, null=True)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Foto de {self.pet_perdido.nome}"
+
+    class Meta:
+        verbose_name = "Foto do Pet Perdido"
+        verbose_name_plural = "Fotos do Pet Perdido"
+        ordering = ['id']
+
+
+class ReportePetEncontrado(models.Model):
+    """Reporte de alguém que encontrou um pet - aguarda aprovação para conectar com dono"""
+    STATUS_CHOICES = [
+        ('pendente', 'Aguardando Análise'),
+        ('aprovado', 'Match Confirmado'),
+        ('rejeitado', 'Rejeitado'),
+        ('em_analise', 'Em Análise'),
+    ]
+    
+    ESPECIE_CHOICES = [
+        ('cachorro', 'Cachorro'),
+        ('gato', 'Gato'),
+        ('outro', 'Outro'),
+    ]
+    
+    PORTE_CHOICES = [
+        ('pequeno', 'Pequeno'),
+        ('medio', 'Médio'),
+        ('grande', 'Grande'),
+    ]
+    
+    SEXO_CHOICES = [
+        ('M', 'Macho'),
+        ('F', 'Fêmea'),
+        ('N', 'Não sei informar'),
+    ]
+    
+    # Dados de quem encontrou
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, null=True, blank=True, related_name='pets_encontrados', verbose_name='Usuário que Encontrou')
+    nome_pessoa = models.CharField(max_length=100, verbose_name='Nome de Quem Encontrou')
+    telefone_contato = models.CharField(max_length=15, verbose_name='Telefone para Contato')
+    email_contato = models.EmailField(verbose_name='E-mail para Contato')
+    
+    # Características do pet encontrado
+    especie = models.CharField(max_length=20, choices=ESPECIE_CHOICES, verbose_name='Espécie')
+    cor = models.CharField(max_length=100, verbose_name='Cor/Pelagem')
+    porte = models.CharField(max_length=10, choices=PORTE_CHOICES, verbose_name='Porte')
+    sexo = models.CharField(max_length=1, choices=SEXO_CHOICES, default='N', verbose_name='Sexo')
+    descricao = models.TextField(verbose_name='Descrição do Pet Encontrado', help_text='Descreva as características físicas e comportamento')
+    caracteristicas_distintivas = models.TextField(blank=True, null=True, verbose_name='Características Distintivas', help_text='Coleira, manchas, cicatrizes, etc.')
+    
+    # Informações de onde foi encontrado
+    data_encontro = models.DateField(verbose_name='Data que Encontrou')
+    hora_encontro = models.TimeField(blank=True, null=True, verbose_name='Hora Aproximada')
+    
+    # Localização
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, verbose_name='Latitude')
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, verbose_name='Longitude')
+    endereco = models.CharField(max_length=255, verbose_name='Endereço onde Encontrou')
+    bairro = models.CharField(max_length=100, verbose_name='Bairro')
+    cidade = models.CharField(max_length=100, verbose_name='Cidade')
+    estado = models.CharField(max_length=2, verbose_name='Estado')
+    
+    # Situação atual do pet
+    pet_com_usuario = models.BooleanField(default=True, verbose_name='Pet está com você')
+    local_temporario = models.CharField(max_length=255, blank=True, null=True, verbose_name='Local Temporário do Pet', help_text='Se o pet não está mais com você, onde ele está?')
+    
+    # Mídia
+    imagem_principal = models.ImageField(upload_to='pets_encontrados/', verbose_name='Foto Principal')
+    
+    # Possíveis matches automáticos
+    possiveis_matches = models.ManyToManyField(PetPerdido, blank=True, related_name='reportes_relacionados', verbose_name='Possíveis Matches')
+    pet_perdido_confirmado = models.ForeignKey(PetPerdido, on_delete=models.SET_NULL, null=True, blank=True, related_name='match_confirmado', verbose_name='Pet Perdido Confirmado')
+    
+    # Status e controle
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente', verbose_name='Status')
+    analisado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reportes_analisados', verbose_name='Analisado por')
+    observacoes_admin = models.TextField(blank=True, null=True, verbose_name='Observações do Administrador')
+    data_criacao = models.DateTimeField(auto_now_add=True, verbose_name='Data do Reporte')
+    data_analise = models.DateTimeField(blank=True, null=True, verbose_name='Data da Análise')
+    data_atualizacao = models.DateTimeField(auto_now=True, verbose_name='Última Atualização')
+    
+    # Notificações
+    dono_notificado = models.BooleanField(default=False, verbose_name='Dono foi Notificado')
+    
+    def __str__(self):
+        return f"Pet {self.get_especie_display()} encontrado em {self.cidade}/{self.estado} - {self.get_status_display()}"
+    
+    class Meta:
+        verbose_name = "Reporte de Pet Encontrado"
+        verbose_name_plural = "Reportes de Pets Encontrados"
+        ordering = ['-data_criacao']
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['cidade', 'estado']),
+            models.Index(fields=['latitude', 'longitude']),
+        ]
+
+
+class ReportePetEncontradoFoto(models.Model):
+    """Fotos adicionais do pet encontrado"""
+    reporte = models.ForeignKey(ReportePetEncontrado, on_delete=models.CASCADE, related_name='fotos_adicionais')
+    imagem = models.ImageField(upload_to='pets_encontrados/fotos/')
+    descricao = models.CharField(max_length=200, blank=True, null=True)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Foto do reporte #{self.reporte.id}"
+
+    class Meta:
+        verbose_name = "Foto do Pet Encontrado"
+        verbose_name_plural = "Fotos do Pet Encontrado"
+        ordering = ['id']
 
 
 # ===== DONATIVO =====

@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from .models import (
     Animal, Adocao, Usuario, AnimalFoto, AnimalVideo, 
     Denuncia, DenunciaImagem, DenunciaVideo, DenunciaHistorico,
-    AnimalParaAdocao, SolicitacaoAdocao, Notificacao, Contato
+    AnimalParaAdocao, SolicitacaoAdocao, Notificacao, Contato,
+    PetPerdido, PetPerdidoFoto, ReportePetEncontrado, ReportePetEncontradoFoto
 )
 
 class AnimalSerializer(serializers.ModelSerializer):
@@ -345,5 +346,207 @@ class ContatoSerializer(serializers.ModelSerializer):
         # Garante que nome e email existam (obrigatórios)
         if not validated_data.get('nome'):
             validated_data['nome'] = validated_data.get('email', '').split('@')[0] or 'Usuário Anônimo'
+        
+        return super().create(validated_data)
+
+
+# ===== PET PERDIDO =====
+class PetPerdidoFotoSerializer(serializers.ModelSerializer):
+    imagem_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = PetPerdidoFoto
+        fields = ['id', 'imagem', 'imagem_url', 'descricao', 'data_criacao']
+    
+    def get_imagem_url(self, obj):
+        request = self.context.get('request')
+        if obj.imagem and hasattr(obj.imagem, 'url'):
+            url = obj.imagem.url
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return None
+
+
+class PetPerdidoSerializer(serializers.ModelSerializer):
+    """Serializer para pets perdidos"""
+    fotos_adicionais = PetPerdidoFotoSerializer(many=True, read_only=True)
+    imagem_principal_url = serializers.SerializerMethodField()
+    usuario_nome = serializers.SerializerMethodField()
+    especie_display = serializers.CharField(source='get_especie_display', read_only=True)
+    porte_display = serializers.CharField(source='get_porte_display', read_only=True)
+    sexo_display = serializers.CharField(source='get_sexo_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    total_reportes = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = PetPerdido
+        fields = [
+            'id', 'usuario', 'usuario_nome', 'nome', 'especie', 'especie_display',
+            'raca', 'cor', 'porte', 'porte_display', 'sexo', 'sexo_display',
+            'idade_aproximada', 'caracteristicas_distintivas', 'descricao',
+            'data_perda', 'hora_perda', 'latitude', 'longitude', 'endereco',
+            'bairro', 'cidade', 'estado', 'telefone_contato', 'email_contato',
+            'whatsapp', 'oferece_recompensa', 'valor_recompensa',
+            'imagem_principal', 'imagem_principal_url', 'fotos_adicionais',
+            'status', 'status_display', 'ativo', 'visualizacoes',
+            'data_criacao', 'data_atualizacao', 'data_encontrado',
+            'total_reportes'
+        ]
+        read_only_fields = ['usuario', 'visualizacoes', 'data_criacao', 'data_atualizacao']
+    
+    def get_imagem_principal_url(self, obj):
+        request = self.context.get('request')
+        if obj.imagem_principal and hasattr(obj.imagem_principal, 'url'):
+            url = obj.imagem_principal.url
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return None
+    
+    def get_usuario_nome(self, obj):
+        if obj.usuario and obj.usuario.user:
+            return obj.usuario.user.get_full_name() or obj.usuario.user.username
+        return None
+    
+    def get_total_reportes(self, obj):
+        """Retorna quantidade de reportes de pets encontrados relacionados"""
+        return obj.reportes_relacionados.filter(status='pendente').count()
+    
+    def create(self, validated_data):
+        # Associa automaticamente ao usuário logado
+        request = self.context.get('request')
+        if request and request.user.is_authenticated and hasattr(request.user, 'usuario'):
+            validated_data['usuario'] = request.user.usuario
+        return super().create(validated_data)
+
+
+# ===== PET ENCONTRADO =====
+class ReportePetEncontradoFotoSerializer(serializers.ModelSerializer):
+    imagem_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ReportePetEncontradoFoto
+        fields = ['id', 'imagem', 'imagem_url', 'descricao', 'data_criacao']
+    
+    def get_imagem_url(self, obj):
+        request = self.context.get('request')
+        if obj.imagem and hasattr(obj.imagem, 'url'):
+            url = obj.imagem.url
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return None
+
+
+class ReportePetEncontradoSerializer(serializers.ModelSerializer):
+    """Serializer para reportes de pets encontrados"""
+    fotos_adicionais = ReportePetEncontradoFotoSerializer(many=True, read_only=True)
+    imagem_principal_url = serializers.SerializerMethodField()
+    usuario_nome = serializers.SerializerMethodField()
+    especie_display = serializers.CharField(source='get_especie_display', read_only=True)
+    porte_display = serializers.CharField(source='get_porte_display', read_only=True)
+    sexo_display = serializers.CharField(source='get_sexo_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    possiveis_matches_detalhes = serializers.SerializerMethodField()
+    pet_perdido_confirmado_detalhes = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ReportePetEncontrado
+        fields = [
+            'id', 'usuario', 'usuario_nome', 'nome_pessoa', 'telefone_contato',
+            'email_contato', 'especie', 'especie_display', 'cor', 'porte',
+            'porte_display', 'sexo', 'sexo_display', 'descricao',
+            'caracteristicas_distintivas', 'data_encontro', 'hora_encontro',
+            'latitude', 'longitude', 'endereco', 'bairro', 'cidade', 'estado',
+            'pet_com_usuario', 'local_temporario', 'imagem_principal',
+            'imagem_principal_url', 'fotos_adicionais', 'possiveis_matches',
+            'possiveis_matches_detalhes', 'pet_perdido_confirmado',
+            'pet_perdido_confirmado_detalhes', 'status', 'status_display',
+            'analisado_por', 'observacoes_admin', 'data_criacao', 'data_analise',
+            'data_atualizacao', 'dono_notificado'
+        ]
+        read_only_fields = [
+            'usuario', 'possiveis_matches', 'pet_perdido_confirmado',
+            'analisado_por', 'data_criacao', 'data_analise', 'data_atualizacao',
+            'dono_notificado'
+        ]
+    
+    def get_imagem_principal_url(self, obj):
+        request = self.context.get('request')
+        if obj.imagem_principal and hasattr(obj.imagem_principal, 'url'):
+            url = obj.imagem_principal.url
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return None
+    
+    def get_usuario_nome(self, obj):
+        if obj.usuario and obj.usuario.user:
+            return obj.usuario.user.get_full_name() or obj.usuario.user.username
+        return obj.nome_pessoa
+    
+    def get_possiveis_matches_detalhes(self, obj):
+        """Retorna detalhes resumidos dos possíveis matches"""
+        matches = obj.possiveis_matches.all()[:5]  # Limita a 5 matches
+        return [{
+            'id': m.id,
+            'nome': m.nome,
+            'especie': m.get_especie_display(),
+            'cor': m.cor,
+            'cidade': m.cidade,
+            'estado': m.estado,
+            'distancia_km': self._calcular_distancia(obj.latitude, obj.longitude, m.latitude, m.longitude),
+            'telefone_contato': m.telefone_contato if self.context.get('show_contact') else None
+        } for m in matches]
+    
+    def get_pet_perdido_confirmado_detalhes(self, obj):
+        """Retorna detalhes do pet perdido confirmado como match"""
+        if obj.pet_perdido_confirmado:
+            m = obj.pet_perdido_confirmado
+            return {
+                'id': m.id,
+                'nome': m.nome,
+                'especie': m.get_especie_display(),
+                'cor': m.cor,
+                'cidade': m.cidade,
+                'estado': m.estado,
+                'telefone_contato': m.telefone_contato,
+                'email_contato': m.email_contato,
+                'whatsapp': m.whatsapp
+            }
+        return None
+    
+    def _calcular_distancia(self, lat1, lon1, lat2, lon2):
+        """Calcula distância aproximada em km entre duas coordenadas"""
+        from math import radians, sin, cos, sqrt, atan2
+        
+        # Raio da Terra em km
+        R = 6371.0
+        
+        lat1, lon1, lat2, lon2 = map(float, [lat1, lon1, lat2, lon2])
+        lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+        
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        
+        a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        
+        distancia = R * c
+        return round(distancia, 2)
+    
+    def create(self, validated_data):
+        # Associa automaticamente ao usuário logado se houver
+        request = self.context.get('request')
+        if request and request.user.is_authenticated and hasattr(request.user, 'usuario'):
+            validated_data['usuario'] = request.user.usuario
+            # Se tem usuário, preenche dados do perfil
+            if not validated_data.get('nome_pessoa'):
+                validated_data['nome_pessoa'] = request.user.get_full_name() or request.user.username
+            if not validated_data.get('email_contato'):
+                validated_data['email_contato'] = request.user.email
+            if not validated_data.get('telefone_contato') and request.user.usuario.telefone:
+                validated_data['telefone_contato'] = request.user.usuario.telefone
         
         return super().create(validated_data)

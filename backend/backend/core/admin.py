@@ -1,7 +1,8 @@
 from django.contrib import admin
 from .models import (
-    Usuario, Animal, Adocao, Denuncia, AnimalPerdido, Donativo, Historia, Contato,
-    AnimalParaAdocao, SolicitacaoAdocao, Notificacao
+    Usuario, Animal, Adocao, Denuncia, Donativo, Historia, Contato,
+    AnimalParaAdocao, SolicitacaoAdocao, Notificacao,
+    PetPerdido, PetPerdidoFoto, ReportePetEncontrado, ReportePetEncontradoFoto
 )
 
 @admin.register(Usuario)
@@ -49,11 +50,56 @@ class DenunciaAdmin(admin.ModelAdmin):
         self.message_user(request, f'{updated} denúncia(s) marcada(s) como resolvida(s).')
     marcar_resolvidas.short_description = 'Marcar como resolvidas'
 
-@admin.register(AnimalPerdido)
-class AnimalPerdidoAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'localizacao', 'status', 'data_criacao')
-    list_filter = ('status', 'data_criacao')
-    search_fields = ('nome', 'localizacao')
+
+@admin.register(PetPerdido)
+class PetPerdidoAdmin(admin.ModelAdmin):
+    list_display = ('nome', 'especie', 'cidade', 'estado', 'status', 'ativo', 'data_perda', 'data_criacao')
+    list_filter = ('especie', 'porte', 'status', 'ativo', 'estado', 'data_criacao')
+    search_fields = ('nome', 'descricao', 'cidade', 'bairro', 'usuario__user__username')
+    readonly_fields = ('visualizacoes', 'data_criacao', 'data_atualizacao', 'data_encontrado')
+    actions = ['marcar_como_encontrado', 'ativar_pets', 'desativar_pets']
+    
+    def marcar_como_encontrado(self, request, queryset):
+        from django.utils import timezone
+        updated = queryset.update(status='encontrado', data_encontrado=timezone.now(), ativo=False)
+        self.message_user(request, f'{updated} pet(s) marcado(s) como encontrado(s).')
+    marcar_como_encontrado.short_description = 'Marcar como encontrado'
+    
+    def ativar_pets(self, request, queryset):
+        updated = queryset.update(ativo=True)
+        self.message_user(request, f'{updated} pet(s) ativado(s) no mapa.')
+    ativar_pets.short_description = 'Ativar no mapa'
+    
+    def desativar_pets(self, request, queryset):
+        updated = queryset.update(ativo=False)
+        self.message_user(request, f'{updated} pet(s) desativado(s) do mapa.')
+    desativar_pets.short_description = 'Desativar do mapa'
+
+
+@admin.register(ReportePetEncontrado)
+class ReportePetEncontradoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'especie', 'cidade', 'estado', 'status', 'data_encontro', 'data_criacao', 'total_matches')
+    list_filter = ('especie', 'porte', 'status', 'estado', 'data_criacao')
+    search_fields = ('descricao', 'cidade', 'bairro', 'nome_pessoa', 'email_contato')
+    readonly_fields = ('data_criacao', 'data_analise', 'data_atualizacao', 'possiveis_matches')
+    filter_horizontal = ('possiveis_matches',)
+    actions = ['marcar_em_analise', 'rejeitar_reportes']
+    
+    def total_matches(self, obj):
+        return obj.possiveis_matches.count()
+    total_matches.short_description = 'Possíveis Matches'
+    
+    def marcar_em_analise(self, request, queryset):
+        updated = queryset.update(status='em_analise')
+        self.message_user(request, f'{updated} reporte(s) marcado(s) como em análise.')
+    marcar_em_analise.short_description = 'Marcar como em análise'
+    
+    def rejeitar_reportes(self, request, queryset):
+        from django.utils import timezone
+        updated = queryset.update(status='rejeitado', analisado_por=request.user, data_analise=timezone.now())
+        self.message_user(request, f'{updated} reporte(s) rejeitado(s).')
+    rejeitar_reportes.short_description = 'Rejeitar reportes'
+
 
 @admin.register(Donativo)
 class DonativoAdmin(admin.ModelAdmin):
