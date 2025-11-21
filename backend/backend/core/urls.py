@@ -3,7 +3,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import (
     RegisterView, MeView, AnimalViewSet, AdocaoViewSet, DenunciaViewSet,
     AnimalParaAdocaoViewSet, SolicitacaoAdocaoViewSet, NotificacaoViewSet,
-    MinhasSolicitacoesEnviadasView, SolicitacoesRecebidasView, MeusPetsCadastradosView
+    MinhasSolicitacoesEnviadasView, SolicitacoesRecebidasView, MeusPetsCadastradosView,
+    ContatoViewSet
 )
 from .views_fotos import AnimalFotoUploadView
 from rest_framework.routers import DefaultRouter
@@ -15,6 +16,7 @@ router.register(r'denuncias', DenunciaViewSet, basename='denuncia')
 router.register(r'animais-adocao', AnimalParaAdocaoViewSet, basename='animal-adocao')
 router.register(r'solicitacoes-adocao', SolicitacaoAdocaoViewSet, basename='solicitacao-adocao')
 router.register(r'notificacoes', NotificacaoViewSet, basename='notificacao')
+router.register(r'contatos', ContatoViewSet, basename='contato')
 
 urlpatterns = [
     path('auth/register/', RegisterView.as_view(), name='auth-register'),

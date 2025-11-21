@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from .models import (
     Animal, Adocao, Usuario, AnimalFoto, AnimalVideo, 
     Denuncia, DenunciaImagem, DenunciaVideo, DenunciaHistorico,
-    AnimalParaAdocao, SolicitacaoAdocao, Notificacao
+    AnimalParaAdocao, SolicitacaoAdocao, Notificacao, Contato
 )
 
 class AnimalSerializer(serializers.ModelSerializer):
@@ -312,3 +312,38 @@ class NotificacaoSerializer(serializers.ModelSerializer):
             'lida', 'data_criacao'
         ]
         read_only_fields = ['usuario', 'data_criacao']
+
+
+class ContatoSerializer(serializers.ModelSerializer):
+    usuario_nome = serializers.CharField(source='usuario.user.get_full_name', read_only=True)
+    respondido_por_nome = serializers.CharField(source='respondido_por.get_full_name', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    
+    class Meta:
+        model = Contato
+        fields = [
+            'id', 'usuario', 'usuario_nome', 'nome', 'email', 'assunto', 'mensagem',
+            'status', 'status_display', 'data_criacao', 'lido', 'data_leitura',
+            'resposta', 'data_resposta', 'respondido_por', 'respondido_por_nome',
+            'usuario_notificado'
+        ]
+        read_only_fields = ['usuario', 'data_criacao', 'lido', 'data_leitura', 
+                           'data_resposta', 'respondido_por', 'usuario_notificado']
+    
+    def create(self, validated_data):
+        # Associa o usuário autenticado se estiver logado
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            if hasattr(request.user, 'usuario'):
+                validated_data['usuario'] = request.user.usuario
+                # Preenche nome e email do usuário logado apenas se não foram fornecidos
+                if not validated_data.get('nome'):
+                    validated_data['nome'] = request.user.get_full_name() or request.user.username
+                if not validated_data.get('email'):
+                    validated_data['email'] = request.user.email or ''
+        
+        # Garante que nome e email existam (obrigatórios)
+        if not validated_data.get('nome'):
+            validated_data['nome'] = validated_data.get('email', '').split('@')[0] or 'Usuário Anônimo'
+        
+        return super().create(validated_data)

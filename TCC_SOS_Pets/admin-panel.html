@@ -264,6 +264,16 @@
             color: #721c24;
         }
         
+        /* Estilo para contatos não lidos */
+        .unread {
+            border-left: 5px solid #4CAF50;
+            background: linear-gradient(to right, #f1f8f4, white);
+        }
+        
+        .unread .card-compact-header {
+            background: linear-gradient(135deg, #f1f8f4, #ffffff);
+        }
+        
         .categoria-badge {
             padding: 6px 12px;
             border-radius: 15px;
@@ -1824,34 +1834,405 @@
             // Remove loading
             if (loadingDiv) loadingDiv.remove();
             
-            // Por enquanto, como não há endpoint de API para contatos, mostramos mensagem informativa
-            // Mas mantemos o layout padrão do painel
-            grid.innerHTML = `
-                <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <div style="font-size: 4em; color: #636e72; margin-bottom: 20px;">
-                        <i class="fas fa-tools"></i>
+            try {
+                const response = await fetch(`${API_BASE}/contatos/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Erro ao carregar contatos');
+                
+                const data = await response.json();
+                const contatos = Array.isArray(data) ? data : (data.results || []);
+                
+                // Atualiza estatísticas
+                const naoLidos = contatos.filter(c => !c.lido).length;
+                const lidos = contatos.filter(c => c.lido).length;
+                document.getElementById('stat-contatos').textContent = naoLidos;
+                document.getElementById('stat-contatos-lidos').textContent = lidos;
+                document.getElementById('badge-contatos').textContent = naoLidos;
+                
+                if (contatos.length === 0) {
+                    grid.innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="font-size: 4em; color: #636e72; margin-bottom: 20px;">
+                                <i class="fas fa-inbox"></i>
+                            </div>
+                            <h3 style="color: #2d3436; margin-bottom: 15px;">Nenhum contato recebido</h3>
+                            <p style="color: #636e72; font-size: 1.1em;">
+                                Quando os usuários enviarem mensagens através do formulário de contato, elas aparecerão aqui.
+                            </p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Ordena por data (não lidos primeiro)
+                contatos.sort((a, b) => {
+                    if (a.lido === b.lido) {
+                        return new Date(b.data_criacao) - new Date(a.data_criacao);
+                    }
+                    return a.lido ? 1 : -1;
+                });
+                
+                grid.innerHTML = contatos.map(contato => {
+                    const statusClass = contato.status === 'respondido' ? 'resolvida' : 
+                                      contato.status === 'em_atendimento' ? 'em_andamento' : 
+                                      contato.status === 'resolvido' ? 'resolvida' : 'pendente';
+                    const statusIcon = contato.status === 'respondido' ? 'check-circle' : 
+                                     contato.status === 'em_atendimento' ? 'hourglass-half' : 
+                                     contato.status === 'resolvido' ? 'check-double' : 'clock';
+                    const statusLabel = contato.status_display || getStatusContatoLabel(contato.status);
+                    
+                    return `
+                        <div class="denuncia-card collapsed ${!contato.lido ? 'unread' : ''}" id="contato-${contato.id}">
+                            <div class="card-compact-header" onclick="toggleContato('contato-${contato.id}')" style="display: flex; align-items: center; padding: 20px; gap: 20px;">
+                                <!-- Coluna Esquerda: Status + Badges -->
+                                <div style="flex: 0 0 auto; display: flex; flex-direction: column; gap: 8px; min-width: 200px;">
+                                    <span class="status-badge status-${statusClass}">
+                                        <i class="fas fa-${statusIcon}"></i> ${statusLabel}
+                                    </span>
+                                    <span class="categoria-badge" style="background: linear-gradient(135deg, #2196F3, #1976D2); color: white;">
+                                        <i class="fas fa-tag"></i> ${contato.assunto || 'Sem assunto'}
+                                    </span>
+                                </div>
+                                
+                                <!-- Coluna do Meio: Nome e Email -->
+                                <div style="flex: 0 0 auto; margin-left: 25px; display: flex; align-items: center; gap: 12px;">
+                                    ${!contato.lido ? '<div style="width: 10px; height: 10px; background: #4CAF50; border-radius: 50%; box-shadow: 0 0 8px rgba(76, 175, 80, 0.6); animation: pulse 2s infinite;"></div>' : ''}
+                                    <div style="text-align: left;">
+                                        <div style="font-size: 1.15em; font-weight: 700; color: ${!contato.lido ? '#2E7D32' : '#2d3436'}; margin-bottom: 4px;">
+                                            <i class="fas fa-user-circle" style="color: #2196F3; margin-right: 6px;"></i>
+                                            ${contato.nome || contato.usuario_nome || 'Usuário Anônimo'}
+                                        </div>
+                                        ${contato.email ? `
+                                            <div style="font-size: 0.88em; color: #636e72;">
+                                                <i class="fas fa-envelope" style="font-size: 0.85em; margin-right: 5px;"></i>${contato.email}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                
+                                <!-- Espaçador -->
+                                <div style="flex: 1;"></div>
+                                
+                                <!-- Coluna Direita: Data e Hora -->
+                                <div style="flex: 0 0 auto; text-align: right; margin-right: 15px;">
+                                    <div style="font-size: 0.92em; color: #2d3436; font-weight: 600; margin-bottom: 3px;">
+                                        <i class="fas fa-calendar-alt" style="margin-right: 5px;"></i>
+                                        ${new Date(contato.data_criacao).toLocaleDateString('pt-BR', {day: '2-digit', month: 'short', year: 'numeric'})}
+                                    </div>
+                                    <div style="font-size: 0.82em; color: #95a5a6;">
+                                        <i class="fas fa-clock" style="margin-right: 5px;"></i>
+                                        ${new Date(contato.data_criacao).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}
+                                    </div>
+                                </div>
+                                
+                                <!-- Ícone de Expandir -->
+                                <div style="flex: 0 0 auto;">
+                                    <i class="fas fa-chevron-down expand-icon" style="font-size: 1.1em; color: #95a5a6;"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="item-content" style="display: none;">
+                                <div class="denuncia-details">
+                                    <!-- Informações do Contato -->
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                                        <div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 15px; border-radius: 10px; border-left: 4px solid #2196F3;">
+                                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                                <i class="fas fa-user" style="color: #2196F3;"></i>
+                                                <strong style="color: #495057; font-size: 0.85em; text-transform: uppercase;">Nome</strong>
+                                            </div>
+                                            <div style="color: #2d3436; font-size: 1.05em; font-weight: 600;">${contato.nome || 'Não informado'}</div>
+                                        </div>
+                                        
+                                        <div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 15px; border-radius: 10px; border-left: 4px solid #9C27B0;">
+                                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                                <i class="fas fa-envelope" style="color: #9C27B0;"></i>
+                                                <strong style="color: #495057; font-size: 0.85em; text-transform: uppercase;">E-mail</strong>
+                                            </div>
+                                            <div style="color: #2d3436; font-size: 0.95em; word-break: break-all;">${contato.email || 'Não informado'}</div>
+                                        </div>
+                                        
+                                        <div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 15px; border-radius: 10px; border-left: 4px solid #FF9800;">
+                                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                                <i class="fas fa-calendar-check" style="color: #FF9800;"></i>
+                                                <strong style="color: #495057; font-size: 0.85em; text-transform: uppercase;">Recebido em</strong>
+                                            </div>
+                                            <div style="color: #2d3436; font-size: 0.95em;">
+                                                ${new Date(contato.data_criacao).toLocaleDateString('pt-BR', {day: '2-digit', month: 'long', year: 'numeric'})}
+                                                <br>às ${new Date(contato.data_criacao).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Mensagem do Usuário -->
+                                    <div style="background: white; padding: 20px; border-radius: 12px; border: 2px solid #e0e0e0; margin-bottom: 20px;">
+                                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 2px solid #f0f0f0;">
+                                            <i class="fas fa-comment-dots" style="font-size: 1.3em; color: #2196F3;"></i>
+                                            <strong style="font-size: 1.1em; color: #2d3436;">Mensagem do Usuário</strong>
+                                        </div>
+                                        <div style="color: #495057; line-height: 1.7; white-space: pre-wrap; font-size: 0.98em;">
+                                            ${contato.mensagem || 'Nenhuma mensagem fornecida'}
+                                        </div>
+                                    </div>
+                                    
+                                    ${contato.resposta ? `
+                                        <!-- Resposta do Admin -->
+                                        <div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); padding: 20px; border-radius: 12px; border: 2px solid #4CAF50; margin-bottom: 20px;">
+                                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 2px solid rgba(76, 175, 80, 0.3);">
+                                                <i class="fas fa-reply-all" style="font-size: 1.3em; color: #2E7D32;"></i>
+                                                <strong style="font-size: 1.1em; color: #2E7D32;">Sua Resposta</strong>
+                                            </div>
+                                            <div style="color: #2d3436; line-height: 1.7; white-space: pre-wrap; font-size: 0.98em; margin-bottom: 15px;">
+                                                ${contato.resposta}
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 15px; padding: 12px; background: rgba(255, 255, 255, 0.7); border-radius: 8px; font-size: 0.9em; color: #2E7D32;">
+                                                <div style="display: flex; align-items: center; gap: 5px;">
+                                                    <i class="fas fa-check-circle"></i>
+                                                    <span>Respondido em</span>
+                                                </div>
+                                                <strong>${new Date(contato.data_resposta).toLocaleDateString('pt-BR', {day: '2-digit', month: 'short', year: 'numeric'})}</strong>
+                                                <span>às</span>
+                                                <strong>${new Date(contato.data_resposta).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}</strong>
+                                                ${contato.respondido_por_nome ? `
+                                                    <div style="margin-left: auto; display: flex; align-items: center; gap: 5px;">
+                                                        <i class="fas fa-user-shield"></i>
+                                                        <span>por <strong>${contato.respondido_por_nome}</strong></span>
+                                                    </div>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${contato.status !== 'respondido' && contato.status !== 'resolvido' ? `
+                                        <!-- Formulário de Resposta -->
+                                        <div style="background: linear-gradient(to bottom, #ffffff, #f8f9fa); padding: 25px; border-radius: 12px; border: 2px dashed #cbd5e0; margin-top: 20px;">
+                                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                                                <i class="fas fa-paper-plane" style="font-size: 1.3em; color: #4CAF50;"></i>
+                                                <strong style="font-size: 1.1em; color: #2d3436;">Responder ao Contato</strong>
+                                            </div>
+                                            <textarea id="resposta-contato-${contato.id}" placeholder="Digite sua resposta aqui... O usuário será notificado automaticamente." style="
+                                                width: 100%;
+                                                min-height: 120px;
+                                                padding: 15px;
+                                                border: 2px solid #e0e0e0;
+                                                border-radius: 10px;
+                                                font-family: inherit;
+                                                font-size: 0.95em;
+                                                resize: vertical;
+                                                transition: all 0.3s;
+                                                line-height: 1.6;
+                                            " onfocus="this.style.borderColor='#4CAF50'; this.style.boxShadow='0 0 0 3px rgba(76, 175, 80, 0.1)';"
+                                               onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none';"></textarea>
+                                            <div style="display: flex; gap: 12px; margin-top: 15px;">
+                                                <button onclick="responderContato(${contato.id})" style="
+                                                    flex: 1;
+                                                    padding: 14px 24px;
+                                                    background: linear-gradient(135deg, #4CAF50, #45a049);
+                                                    color: white;
+                                                    border: none;
+                                                    border-radius: 10px;
+                                                    cursor: pointer;
+                                                    font-weight: 700;
+                                                    font-size: 1em;
+                                                    transition: all 0.3s;
+                                                    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+                                                    display: flex;
+                                                    align-items: center;
+                                                    justify-content: center;
+                                                    gap: 8px;
+                                                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(76, 175, 80, 0.4)';"
+                                                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(76, 175, 80, 0.3)';">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                    <span>Enviar Resposta</span>
+                                                </button>
+                                                ${!contato.lido ? `
+                                                    <button onclick="marcarContatoLido(${contato.id})" style="
+                                                        padding: 14px 24px;
+                                                        background: linear-gradient(135deg, #2196F3, #1976D2);
+                                                        color: white;
+                                                        border: none;
+                                                        border-radius: 10px;
+                                                        cursor: pointer;
+                                                        font-weight: 700;
+                                                        font-size: 1em;
+                                                        transition: all 0.3s;
+                                                        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+                                                        display: flex;
+                                                        align-items: center;
+                                                        justify-content: center;
+                                                        gap: 8px;
+                                                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(33, 150, 243, 0.4)';"
+                                                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(33, 150, 243, 0.3)';">
+                                                        <i class="fas fa-check"></i>
+                                                        <span>Marcar Lido</span>
+                                                    </button>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    ` : contato.status === 'respondido' ? `
+                                        <!-- Ação para Resolver -->
+                                        <div style="margin-top: 20px;">
+                                            <button onclick="resolverContato(${contato.id})" style="
+                                                width: 100%;
+                                                padding: 16px 24px;
+                                                background: linear-gradient(135deg, #6c757d, #5a6268);
+                                                color: white;
+                                                border: none;
+                                                border-radius: 10px;
+                                                cursor: pointer;
+                                                font-weight: 700;
+                                                font-size: 1em;
+                                                transition: all 0.3s;
+                                                box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+                                                display: flex;
+                                                align-items: center;
+                                                justify-content: center;
+                                                gap: 10px;
+                                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(108, 117, 125, 0.4)';"
+                                               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(108, 117, 125, 0.3)';">
+                                                <i class="fas fa-check-double"></i>
+                                                <span>Marcar como Resolvido e Arquivar</span>
+                                            </button>
+                                        </div>
+                                    ` : `
+                                        <!-- Contato Resolvido -->
+                                        <div style="padding: 20px; background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-radius: 12px; text-align: center; border: 2px solid #4CAF50; margin-top: 20px;">
+                                            <i class="fas fa-check-circle" style="font-size: 2.5em; color: #2E7D32; margin-bottom: 10px;"></i>
+                                            <div style="font-size: 1.1em; font-weight: 700; color: #2E7D32; margin-bottom: 5px;">
+                                                Contato Resolvido e Arquivado
+                                            </div>
+                                            <div style="font-size: 0.9em; color: #558b2f;">
+                                                Este contato foi finalizado com sucesso
+                                            </div>
+                                        </div>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Erro ao carregar contatos:', error);
+                grid.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="font-size: 4em; color: #f44336; margin-bottom: 20px;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 style="color: #2d3436; margin-bottom: 15px;">Erro ao Carregar Contatos</h3>
+                        <p style="color: #636e72; font-size: 1.1em;">
+                            Não foi possível carregar os contatos. Verifique sua conexão e tente novamente.
+                        </p>
+                        <button onclick="loadContatos()" style="
+                            margin-top: 20px;
+                            padding: 12px 30px;
+                            background: linear-gradient(135deg, #4CAF50, #45a049);
+                            color: white;
+                            border: none;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+                        ">
+                            <i class="fas fa-redo"></i> Tentar Novamente
+                        </button>
                     </div>
-                    <h3 style="color: #2d3436; margin-bottom: 15px;">Funcionalidade em Desenvolvimento</h3>
-                    <p style="color: #636e72; font-size: 1.1em; max-width: 600px; margin: 0 auto 25px auto;">
-                        A gestão de contatos através deste painel ainda está em desenvolvimento. 
-                        Por enquanto, você pode acessar e gerenciar os contatos através do Django Admin.
-                    </p>
-                    <a href="/admin/core/contato/" target="_blank" style="
-                        display: inline-block;
-                        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-                        color: white;
-                        padding: 12px 30px;
-                        border-radius: 8px;
-                        text-decoration: none;
-                        font-weight: 600;
-                        transition: all 0.3s;
-                        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(76, 175, 80, 0.4)';" 
-                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(76, 175, 80, 0.3)';">
-                        <i class="fas fa-external-link-alt"></i> Acessar Django Admin
-                    </a>
-                </div>
-            `;
+                `;
+            }
+        }
+        
+        function getStatusContatoLabel(status) {
+            const labels = {
+                'pendente': 'Pendente',
+                'em_atendimento': 'Em Atendimento',
+                'respondido': 'Respondido',
+                'resolvido': 'Resolvido'
+            };
+            return labels[status] || status;
+        }
+        
+        async function responderContato(id) {
+            const token = localStorage.getItem('access');
+            const resposta = document.getElementById(`resposta-contato-${id}`).value.trim();
+            
+            if (!resposta) {
+                alert('Por favor, digite uma resposta antes de enviar.');
+                return;
+            }
+            
+            if (!confirm('Tem certeza que deseja enviar esta resposta? O usuário será notificado.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/contatos/${id}/responder/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ resposta })
+                });
+                
+                if (!response.ok) throw new Error('Erro ao enviar resposta');
+                
+                alert('Resposta enviada com sucesso! O usuário foi notificado.');
+                await loadContatos();
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao enviar resposta. Tente novamente.');
+            }
+        }
+        
+        async function marcarContatoLido(id) {
+            const token = localStorage.getItem('access');
+            
+            try {
+                const response = await fetch(`${API_BASE}/contatos/${id}/marcar_lido/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Erro ao marcar como lido');
+                
+                await loadContatos();
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao marcar contato como lido.');
+            }
+        }
+        
+        async function resolverContato(id) {
+            const token = localStorage.getItem('access');
+            
+            if (!confirm('Tem certeza que deseja marcar este contato como resolvido?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/contatos/${id}/resolver/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Erro ao resolver contato');
+                
+                alert('Contato marcado como resolvido!');
+                await loadContatos();
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao resolver contato.');
+            }
         }
         
         function toggleContato(cardId) {
@@ -1963,10 +2344,18 @@
                 document.getElementById('stat-adocoes-rejeitadas').textContent = solicitacoesRejeitadas;
                 document.getElementById('badge-adocoes').textContent = totalPendentes;
                 
-                // Contatos (placeholder)
-                document.getElementById('stat-contatos').textContent = '—';
-                document.getElementById('stat-contatos-lidos').textContent = '—';
-                document.getElementById('badge-contatos').textContent = '0';
+                // Contatos
+                const contatos = await fetch(`${API_BASE}/contatos/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).then(r => r.json()).catch(() => ({ results: [] }));
+                const contatosArray = Array.isArray(contatos) ? contatos : (contatos.results || []);
+                
+                const contatosNaoLidos = contatosArray.filter(c => !c.lido).length;
+                const contatosLidos = contatosArray.filter(c => c.lido).length;
+                
+                document.getElementById('stat-contatos').textContent = contatosNaoLidos;
+                document.getElementById('stat-contatos-lidos').textContent = contatosLidos;
+                document.getElementById('badge-contatos').textContent = contatosNaoLidos;
                 
             } catch (error) {
                 console.error('Erro ao atualizar estatísticas:', error);

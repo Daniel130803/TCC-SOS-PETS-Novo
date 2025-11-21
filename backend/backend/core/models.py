@@ -233,6 +233,8 @@ class Notificacao(models.Model):
         ('animal_rejeitado', 'Animal Rejeitado'),
         ('interesse_adocao', 'Novo Interesse em Adoção'),
         ('denuncia', 'Denúncia'),
+        ('contato_recebido', 'Contato Recebido'),
+        ('contato_respondido', 'Contato Respondido'),
     ]
     
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='notificacoes', verbose_name='Usuário')
@@ -413,15 +415,38 @@ class Historia(models.Model):
 
 # ===== CONTATO =====
 class Contato(models.Model):
+    STATUS_CHOICES = [
+        ('pendente', 'Pendente'),
+        ('em_atendimento', 'Em Atendimento'),
+        ('respondido', 'Respondido'),
+        ('resolvido', 'Resolvido'),
+    ]
+    
+    # Informações do usuário
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, null=True, blank=True, related_name='contatos')
     nome = models.CharField(max_length=100)
     email = models.EmailField()
+    
+    # Conteúdo
     assunto = models.CharField(max_length=200)
     mensagem = models.TextField()
+    
+    # Status e controle
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
     data_criacao = models.DateTimeField(auto_now_add=True)
     lido = models.BooleanField(default=False)
+    data_leitura = models.DateTimeField(null=True, blank=True)
+    
+    # Resposta do admin
+    resposta = models.TextField(blank=True, null=True)
+    data_resposta = models.DateTimeField(null=True, blank=True)
+    respondido_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='contatos_respondidos')
+    
+    # Notificações
+    usuario_notificado = models.BooleanField(default=False)  # Se o usuário foi notificado da resposta
     
     def __str__(self):
-        return f"{self.assunto} - {self.email}"
+        return f"{self.assunto} - {self.nome}"
     
     class Meta:
         verbose_name = "Contato"

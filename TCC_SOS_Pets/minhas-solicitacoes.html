@@ -735,6 +735,11 @@
                 Meus Pets Cadastrados
                 <span class="badge" id="badge-meus-pets">0</span>
             </button>
+            <button class="tab-button" data-tab="contatos" onclick="switchTab('contatos')">
+                <i class="fas fa-envelope"></i>
+                Contatos Feitos
+                <span class="badge" id="badge-contatos">0</span>
+            </button>
         </div>
 
         <!-- Tab: Solicitações Enviadas -->
@@ -758,6 +763,14 @@
             <div class="loading-spinner">
                 <i class="fas fa-spinner fa-spin"></i>
                 <p>Carregando pets...</p>
+            </div>
+        </div>
+
+        <!-- Tab: Contatos Feitos -->
+        <div id="tab-contatos" class="tab-content">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando contatos...</p>
             </div>
         </div>
     </div>
@@ -899,6 +912,14 @@
             await loadSolicitacoesEnviadas();
             await loadSolicitacoesRecebidas();
             await loadMeusPets();
+            await loadMeusContatos();
+            
+            // Verifica se deve abrir uma aba específica pela URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+            if (tab && ['enviadas', 'recebidas', 'meus-pets', 'contatos'].includes(tab)) {
+                switchTab(tab);
+            }
         }
 
         function switchTab(tabName) {
@@ -1267,6 +1288,114 @@
                 'aprovado': 'Aprovado',
                 'rejeitado': 'Rejeitado',
                 'adotado': 'Adotado'
+            };
+            return labels[status] || status;
+        }
+
+        async function loadMeusContatos() {
+            const container = document.getElementById('tab-contatos');
+            const token = localStorage.getItem('access');
+
+            try {
+                const response = await fetch(`${API_BASE}/contatos/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error('Erro ao carregar contatos');
+
+                const data = await response.json();
+                const contatos = Array.isArray(data) ? data : (data.results || []);
+
+                const naoLidos = contatos.filter(c => c.status === 'respondido' && !c.lido).length;
+                document.getElementById('badge-contatos').textContent = naoLidos > 0 ? naoLidos : contatos.length;
+
+                if (contatos.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-envelope-open"></i>
+                            <h3>Nenhum contato enviado</h3>
+                            <p>Você ainda não enviou nenhuma mensagem para os administradores</p>
+                            <a href="/contato/" class="btn-action btn-ver-pet" style="display: inline-flex; margin-top: 20px; text-decoration: none;">
+                                <i class="fas fa-paper-plane"></i> Enviar Contato
+                            </a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="solicitacoes-grid">
+                        ${contatos.map(c => `
+                            <div class="solicitacao-card">
+                                <div class="card-header">
+                                    <div class="pet-info">
+                                        <div class="pet-avatar" style="background: linear-gradient(135deg, #2196F3, #1976D2); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                                            <i class="fas fa-envelope"></i>
+                                        </div>
+                                        <div class="pet-details">
+                                            <h3>${c.assunto}</h3>
+                                            <p>${new Date(c.data_criacao).toLocaleDateString('pt-BR')} às ${new Date(c.data_criacao).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}</p>
+                                        </div>
+                                    </div>
+                                    <span class="status-badge status-${c.status === 'pendente' ? 'pendente' : c.status === 'respondido' ? 'aprovada' : c.status === 'em_atendimento' ? 'pendente' : 'rejeitada'}">
+                                        <i class="fas fa-${c.status === 'pendente' ? 'clock' : c.status === 'respondido' ? 'check-circle' : c.status === 'em_atendimento' ? 'hourglass-half' : 'check'}"></i>
+                                        ${c.status_display || getStatusContatoLabel(c.status)}
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="info-row">
+                                        <i class="fas fa-envelope"></i>
+                                        <strong>E-mail:</strong>
+                                        ${c.email}
+                                    </div>
+                                    <div class="mensagem-box">
+                                        <strong><i class="fas fa-comment"></i> Sua Mensagem:</strong>
+                                        <p>${c.mensagem}</p>
+                                    </div>
+                                    ${c.resposta ? `
+                                        <div class="contatos-box">
+                                            <h4><i class="fas fa-reply"></i> Resposta do Administrador</h4>
+                                            <p style="margin: 10px 0 0 0; color: #2d3436; line-height: 1.6;">${c.resposta}</p>
+                                            <div style="margin-top: 10px; font-size: 0.85rem; color: #636e72;">
+                                                <i class="fas fa-clock"></i>
+                                                Respondido em ${new Date(c.data_resposta).toLocaleDateString('pt-BR')} às ${new Date(c.data_resposta).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}
+                                                ${c.respondido_por_nome ? ` por ${c.respondido_por_nome}` : ''}
+                                            </div>
+                                        </div>
+                                    ` : c.status === 'em_atendimento' ? `
+                                        <div class="mensagem-box" style="border-left-color: #ff9800; background: #fff8e1;">
+                                            <strong><i class="fas fa-info-circle"></i> Status:</strong>
+                                            <p>Sua mensagem está sendo analisada. Aguarde a resposta do administrador.</p>
+                                        </div>
+                                    ` : c.status === 'pendente' ? `
+                                        <div class="mensagem-box" style="border-left-color: #2196F3; background: #e3f2fd;">
+                                            <strong><i class="fas fa-info-circle"></i> Status:</strong>
+                                            <p>Sua mensagem foi enviada e está aguardando atendimento.</p>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Erro:', error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle" style="color: #f44336;"></i>
+                        <h3>Erro ao carregar contatos</h3>
+                        <p>Tente novamente mais tarde</p>
+                    </div>
+                `;
+            }
+        }
+
+        function getStatusContatoLabel(status) {
+            const labels = {
+                'pendente': 'Pendente',
+                'em_atendimento': 'Em Atendimento',
+                'respondido': 'Respondido',
+                'resolvido': 'Resolvido'
             };
             return labels[status] || status;
         }

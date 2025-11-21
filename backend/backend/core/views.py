@@ -4,12 +4,13 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from .models import (
     Animal, Adocao, Denuncia, DenunciaImagem, DenunciaVideo, DenunciaHistorico,
-    AnimalParaAdocao, SolicitacaoAdocao, Notificacao, Usuario
+    AnimalParaAdocao, SolicitacaoAdocao, Notificacao, Usuario, Contato
 )
 from .serializers import (
     AnimalSerializer, AdocaoSerializer, DenunciaSerializer,
     RegisterSerializer, UserMeSerializer, UserUpdateSerializer,
-    AnimalParaAdocaoSerializer, SolicitacaoAdocaoSerializer, NotificacaoSerializer
+    AnimalParaAdocaoSerializer, SolicitacaoAdocaoSerializer, NotificacaoSerializer,
+    ContatoSerializer
 )
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -645,6 +646,105 @@ class MeusPetsCadastradosView(APIView):
             data.append(item)
         
         return Response({'results': data}, status=status.HTTP_200_OK)
+
+
+class ContatoViewSet(viewsets.ModelViewSet):
+    """ViewSet para gerenciar contatos com o administrador"""
+    queryset = Contato.objects.all()
+    serializer_class = ContatoSerializer
+    permission_classes = [permissions.AllowAny]  # Permite contato anônimo
+    
+    def get_queryset(self):
+        qs = super().get_queryset()
+        
+        # Admins veem todos os contatos
+        if self.request.user.is_authenticated and self.request.user.is_staff:
+            return qs
+        
+        # Usuários autenticados veem apenas seus próprios contatos
+        if self.request.user.is_authenticated and hasattr(self.request.user, 'usuario'):
+            return qs.filter(usuario=self.request.user.usuario)
+        
+        # Usuários não autenticados não veem nada no list
+        return qs.none()
+    
+    def create(self, request, *args, **kwargs):
+        """Criar novo contato e notificar administradores"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        contato = serializer.save()
+        
+        # Notifica todos os administradores
+        admin_users = User.objects.filter(is_staff=True)
+        for admin in admin_users:
+            if hasattr(admin, 'usuario'):
+                Notificacao.objects.create(
+                    usuario=admin.usuario,
+                    tipo='contato_recebido',
+                    titulo='Novo contato recebido',
+                    mensagem=f'Nova mensagem de {contato.nome}: {contato.assunto}',
+                    link='/admin-panel/?tab=contatos'
+                )
+        
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def responder(self, request, pk=None):
+        """Admin responde a um contato"""
+        contato = self.get_object()
+        resposta = request.data.get('resposta', '')
+        
+        if not resposta:
+            return Response(
+                {'error': 'Resposta não pode ser vazia'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Atualiza o contato
+        contato.resposta = resposta
+        contato.data_resposta = timezone.now()
+        contato.respondido_por = request.user
+        contato.status = 'respondido'
+        contato.save()
+        
+        # Notifica o usuário que enviou o contato (se estiver registrado)
+        if contato.usuario:
+            Notificacao.objects.create(
+                usuario=contato.usuario,
+                tipo='contato_respondido',
+                titulo='Resposta do administrador',
+                mensagem=f'Sua mensagem "{contato.assunto}" foi respondida!',
+                link='/minhas-solicitacoes/?tab=contatos'
+            )
+            contato.usuario_notificado = True
+            contato.save()
+        
+        serializer = self.get_serializer(contato)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def marcar_lido(self, request, pk=None):
+        """Admin marca contato como lido"""
+        contato = self.get_object()
+        contato.lido = True
+        contato.data_leitura = timezone.now()
+        if contato.status == 'pendente':
+            contato.status = 'em_atendimento'
+        contato.save()
+        
+        serializer = self.get_serializer(contato)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def resolver(self, request, pk=None):
+        """Admin marca contato como resolvido"""
+        contato = self.get_object()
+        contato.status = 'resolvido'
+        contato.save()
+        
+        serializer = self.get_serializer(contato)
+        return Response(serializer.data)
 
 
 
