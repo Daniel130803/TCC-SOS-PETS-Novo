@@ -422,13 +422,36 @@ async function loadEstados() {
         'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
     ];
     
-    const select = document.getElementById('estado-filter');
-    if (select) {
+    // Popular filtro de estado
+    const filterSelect = document.getElementById('estado-filter');
+    if (filterSelect) {
         estados.forEach(estado => {
             const option = document.createElement('option');
             option.value = estado;
             option.textContent = estado;
-            select.appendChild(option);
+            filterSelect.appendChild(option);
+        });
+    }
+    
+    // Popular select de estado no modal "Perdi meu Pet"
+    const lostEstadoSelect = document.getElementById('lost-estado');
+    if (lostEstadoSelect) {
+        estados.forEach(estado => {
+            const option = document.createElement('option');
+            option.value = estado;
+            option.textContent = estado;
+            lostEstadoSelect.appendChild(option);
+        });
+    }
+    
+    // Popular select de estado no modal "Encontrei um Pet"
+    const foundEstadoSelect = document.getElementById('found-estado');
+    if (foundEstadoSelect) {
+        estados.forEach(estado => {
+            const option = document.createElement('option');
+            option.value = estado;
+            option.textContent = estado;
+            foundEstadoSelect.appendChild(option);
         });
     }
 }

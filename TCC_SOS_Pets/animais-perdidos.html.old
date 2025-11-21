@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pets Peridos - S.O.S Pets</title>
+    <link rel="icon" type="image/png" href="{% static 'Estetica_site/Logo.png' %}">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Roboto:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+</head>
+
+<body>
+
+    <header>
+        <a href="/" class="header-logo-link">
+            <i class="fas fa-paw"></i>
+            <span class="logo-text">S.O.S Pets</span>
+        </a>
+
+        <nav>
+            <a href="/adocao/"><i class="fas fa-heart"></i><span>Adoção</span></a>
+            <a href="/arrecadacao/"><i class="fas fa-hand-holding-heart"></i><span>Arrecadação</span></a>
+            <a href="/denuncia/"><i class="fas fa-bullhorn"></i><span>Denúncia</span></a>
+            <a href="/animais-perdidos/"><i class="fas fa-search"></i><span>Pets Perdidos</span></a>
+            <a href="/contato/"><i class="fas fa-envelope"></i><span>Contato</span></a>
+            <div class="nav-user-area"></div>
+        </nav>
+    </header>
+
+    <main>
+
+        <section class="lost-hero">
+            <h1>Ajude a trazê-los de volta para casa</h1>
+            <p>Use nossas ferramentas para cadastrar um pet perdido ou para reportar um animal que você encontrou.</p>
+            <div class="lost-hero-buttons">
+                <a href="#" id="open-lost-pet-modal-btn" class="hero-btn primary"><i class="fas fa-bullhorn"></i> Perdi
+                    meu Pet</a>
+                <a href="#" id="open-found-pet-modal-btn" class="hero-btn secondary"><i
+                        class="fas fa-hand-holding-heart"></i> Encontrei um Pet</a>
+            </div>
+        </section>
+
+        <section class="simple-location-filter">
+            <label for="state-filter-select">Mostrar animais perdidos em:</label>
+            <select id="state-filter-select" name="estado">
+                <option value="">Todo o Brasil</option>
+            </select>
+        </section>
+
+        <div id="map-container"></div>
+
+        <div id="results-container" class="galeria-perdidos">
+        </div>
+        <div id="no-results-message-lost" style="display: none; text-align: center; padding: 2rem;">
+            <h3>Nenhum animal perdido encontrado com esses critérios.</h3>
+        </div>
+
+    </main>
+
+    <div id="found-pet-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Reportar Animal Encontrado</h3>
+                <p>Obrigado por ajudar! Preencha os dados abaixo para que o dono ou a nossa equipe possa entrar em
+                    contato.</p>
+                <button id="found-pet-modal-close-btn" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="found-pet-form" class="modal-form">
+                    <div class="form-group">
+                        <label for="modal-found-location">Local onde o animal foi encontrado</label>
+                        <input type="text" id="modal-found-location"
+                            placeholder="Cidade, bairro, rua ou ponto de referência" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modal-reporter-contact">Seu nome e Telefone/WhatsApp para contato</label>
+                        <input type="text" id="modal-reporter-contact"
+                            placeholder="Para o dono poder te agradecer e contatar" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="found-pet-photo" class="file-upload-label">
+                            <i class="fas fa-camera"></i>
+                            <span>Enviar uma foto do pet</span>
+                        </label>
+                        <input type="file" id="found-pet-photo" class="file-upload-input" accept="image/*">
+                        <span id="found-file-name-display" class="file-name-display"></span>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Enviar Reporte</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="lost-pet-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Cadastrar Animal Perdido</h3>
+                <p>Preencha os dados para criar um alerta em nosso mural.</p>
+                <button id="lost-pet-modal-close-btn" class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="lost-pet-form" class="modal-form">
+                    <div class="form-group">
+                        <label for="modal-pet-name">Nome do Pet</label>
+                        <input type="text" id="modal-pet-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-last-seen">Último local visto (Endereço completo)</label>
+                        <input type="text" id="modal-last-seen" placeholder="Ex: Rua das Flores, 123, São Paulo"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-owner-contact">Seu Telefone/WhatsApp para contato</label>
+                        <input type="tel" id="modal-owner-contact" placeholder="(XX) 9XXXX-XXXX" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-pet-photo" class="file-upload-label">
+                            <i class="fas fa-camera"></i>
+                            <span>Escolher foto do pet</span>
+                        </label>
+                        <input type="file" id="modal-pet-photo" class="file-upload-input" accept="image/*">
+                        <span id="file-name-display" class="file-name-display"></span>
+                    </div>
+                    <button type="submit" class="btn-submit">Criar Alerta</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="contact-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="contact-modal-close-btn" class="modal-close-btn">&times;</button>
+            <h3>Informações de Contato</h3>
+            <p>Você encontrou ou tem informações sobre o <strong id="modal-pet-name"></strong>? Entre em contato com o
+                dono:</p>
+            <ul>
+                <li><i class="fas fa-user"></i><strong>Dono(a):</strong> <span id="modal-owner-name"></span></li>
+                <li><i class="fas fa-phone-alt"></i><strong>Telefone/WhatsApp:</strong> <span
+                        id="modal-owner-phone"></span></li>
+                <li><i class="fas fa-envelope"></i><strong>E-mail:</strong> <span id="modal-owner-email"></span></li>
+            </ul>
+            <p class="modal-notice">Ao contatar, seja gentil e forneça detalhes claros sobre onde e quando você viu o
+                animal.</p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-left">
+            <img src="{% static 'Estetica_site/logo-sos-pets.png' %}" alt="Logo S.O.S Pets" class="footer-logo-img">
+            <p class="copyright">© 2025 S.O.S Pets</p>
+        </div>
+
+        <div class="footer-center">
+            <a href="/adocao/">Adoção</a>
+            <a href="/arrecadacao/">Arrecadação</a>
+            <a href="/contato/">Contato</a>
+        </div>
+
+        <div class="footer-right">
+            <p>Siga-nos nas redes:</p>
+            <div class="footer-social-icons">
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- <script src="{% static 'script.js' %}"></script> -->
+    <script src="{% static 'user_session.js' %}" defer></script>
+</body>
+
+</html>
