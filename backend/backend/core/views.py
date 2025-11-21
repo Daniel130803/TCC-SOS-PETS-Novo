@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
+from math import radians, sin, cos, sqrt, atan2
 from .models import (
     Animal, Adocao, Denuncia, DenunciaImagem, DenunciaVideo, DenunciaHistorico,
     AnimalParaAdocao, SolicitacaoAdocao, Notificacao, Usuario, Contato,

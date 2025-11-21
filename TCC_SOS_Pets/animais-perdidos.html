@@ -10,18 +10,31 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <style>
+        /* Reset de margin/padding para main */
+        main {
+            padding: 0;
+            margin: 0;
+        }
+        
         /* Estilos específicos para pets perdidos */
         .lost-hero {
             background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%);
             color: white;
             text-align: center;
             padding: 60px 20px;
-            margin-bottom: 30px;
+            margin: 0 0 30px 0;
         }
         
         .lost-hero h1 {
             font-size: 2.5em;
-            margin-bottom: 15px;
+            margin: 0 0 15px 0;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .lost-hero p {
+            font-size: 1.1em;
+            margin: 0;
+            opacity: 0.95;
         }
         
         .lost-hero-buttons {
@@ -88,6 +101,7 @@
             margin-bottom: 5px;
             font-weight: 600;
             color: #333;
+            font-size: 0.9em;
         }
         
         .filter-group select,
@@ -97,12 +111,20 @@
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-size: 1em;
+            font-family: inherit;
+        }
+        
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
         }
         
         #map-container {
-            width: 100%;
+            width: calc(100% - 40px);
+            max-width: 1200px;
             height: 600px;
-            margin-bottom: 30px;
+            margin: 0 auto 30px;
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -110,8 +132,8 @@
         
         #pets-list-container {
             max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0 auto 40px;
+            padding: 0 20px;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 25px;
@@ -153,6 +175,7 @@
             border-radius: 20px;
             font-weight: bold;
             font-size: 0.9em;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
         
         .pet-card-content {
@@ -161,18 +184,22 @@
         
         .pet-card-content h3 {
             color: #d32f2f;
-            margin-bottom: 10px;
+            margin: 0 0 10px 0;
             font-size: 1.4em;
+            font-family: 'Poppins', sans-serif;
         }
         
         .pet-card-content p {
             margin: 8px 0;
             color: #666;
+            font-size: 0.95em;
         }
         
         .pet-card-content i {
             margin-right: 8px;
             color: #d32f2f;
+            width: 18px;
+            text-align: center;
         }
         
         .btn-view-details {
@@ -186,10 +213,34 @@
             cursor: pointer;
             margin-top: 15px;
             transition: all 0.3s;
+            font-size: 1em;
         }
         
         .btn-view-details:hover {
             background: linear-gradient(135deg, #c62828, #d32f2f);
+        }
+        
+        #no-results-message {
+            text-align: center;
+            padding: 60px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        #no-results-message i {
+            font-size: 4em;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        
+        #no-results-message h3 {
+            color: #666;
+            margin-bottom: 10px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        #no-results-message p {
+            color: #999;
         }
         
         /* Modais */
@@ -404,6 +455,137 @@
         .btn-contact.email {
             background: #666;
             color: white;
+        }
+        
+        .btn-contact:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        /* Estilos adicionais para formulários nos modais */
+        .modal-form .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .modal-form .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95em;
+        }
+        
+        .modal-form .form-group input[type="text"],
+        .modal-form .form-group input[type="email"],
+        .modal-form .form-group input[type="tel"],
+        .modal-form .form-group input[type="date"],
+        .modal-form .form-group input[type="time"],
+        .modal-form .form-group input[type="number"],
+        .modal-form .form-group input[type="file"],
+        .modal-form .form-group select,
+        .modal-form .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        
+        .modal-form .form-group input:focus,
+        .modal-form .form-group select:focus,
+        .modal-form .form-group textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .modal-form .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .modal-form .form-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+        
+        .modal-form .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        
+        .modal-form .btn-submit:hover {
+            background: linear-gradient(135deg, #45a049, #4CAF50);
+            transform: translateY(-2px);
+        }
+        
+        /* Ajustes responsivos */
+        @media (max-width: 768px) {
+            .lost-hero h1 {
+                font-size: 1.8em;
+            }
+            
+            .lost-hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .hero-btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            #map-container {
+                height: 400px;
+                width: calc(100% - 20px);
+            }
+            
+            #pets-list-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                max-width: 100%;
+                margin: 10px;
+            }
+            
+            .pet-details-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Fix para sobreposição com header */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Garantir que modais apareçam sobre tudo */
+        .modal-overlay.show {
+            display: flex !important;
         }
         
         @media (max-width: 768px) {
