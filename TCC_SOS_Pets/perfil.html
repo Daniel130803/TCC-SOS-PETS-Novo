@@ -58,17 +58,41 @@
 
                 <div class="form-group">
                     <label for="first_name">Nome</label>
-                    <input type="text" id="first_name" name="first_name" placeholder="Seu nome">
+                    <input 
+                        type="text" 
+                        id="first_name" 
+                        name="first_name" 
+                        required 
+                        minlength="3" 
+                        maxlength="100"
+                        placeholder="Nome e Sobrenome"
+                        title="Digite seu nome completo (mínimo 3 caracteres)"
+                    >
                 </div>
 
                 <div class="form-group">
                     <label for="email">E-mail</label>
-                    <input type="email" id="email" name="email" placeholder="seu@email.com">
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        required 
+                        maxlength="254"
+                        placeholder="seu@email.com"
+                        title="Digite um e-mail válido"
+                    >
                 </div>
 
                 <div class="form-group">
                     <label for="telefone">Telefone</label>
-                    <input type="text" id="telefone" name="telefone" placeholder="(11) 90000-0000">
+                    <input 
+                        type="tel" 
+                        id="telefone" 
+                        name="telefone" 
+                        maxlength="20"
+                        placeholder="(11) 99999-9999"
+                        title="Formato: (11) 99999-9999"
+                    >
                 </div>
 
                 <div id="profile-message" style="margin: 1rem 0; padding: 0.75rem; border-radius: 4px; display: none;"></div>
@@ -103,104 +127,9 @@
     </div>
 </footer>
 
+<script src="{% static 'toast-notifications.js' %}" defer></script>
+<script src="{% static 'validations.js' %}" defer></script>
 <script src="{% static 'user_session.js' %}" defer></script>
-<script>
-document.addEventListener('DOMContentLoaded', async function() {
-    const loadingEl = document.getElementById('profile-loading');
-    const errorEl = document.getElementById('profile-error');
-    const formEl = document.getElementById('profile-form');
-    const messageEl = document.getElementById('profile-message');
-
-    const access = localStorage.getItem('access');
-    const refresh = localStorage.getItem('refresh');
-
-    if (!access) {
-        loadingEl.style.display = 'none';
-        errorEl.style.display = 'block';
-        return;
-    }
-
-    async function loadProfile() {
-        try {
-            const resp = await fetch('/api/auth/me/', {
-                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('access') }
-            });
-
-            if (resp.status === 401 && refresh) {
-                // Tenta refresh
-                const refreshResp = await fetch('/api/auth/token/refresh/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ refresh })
-                });
-                if (refreshResp.ok) {
-                    const data = await refreshResp.json();
-                    localStorage.setItem('access', data.access);
-                    return loadProfile(); // Retry
-                }
-                throw new Error('Token expirado');
-            }
-
-            if (!resp.ok) throw new Error('Erro ao carregar perfil');
-
-            const data = await resp.json();
-            
-            document.getElementById('username').value = data.username || '';
-            document.getElementById('first_name').value = data.first_name || '';
-            document.getElementById('email').value = data.email || '';
-            document.getElementById('telefone').value = data.telefone || '';
-
-            loadingEl.style.display = 'none';
-            formEl.style.display = 'block';
-
-        } catch (err) {
-            loadingEl.style.display = 'none';
-            errorEl.style.display = 'block';
-        }
-    }
-
-    await loadProfile();
-
-    formEl.addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const payload = {
-            first_name: document.getElementById('first_name').value,
-            email: document.getElementById('email').value,
-            telefone: document.getElementById('telefone').value
-        };
-
-        try {
-            const resp = await fetch('/api/auth/me/', {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('access'),
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (resp.ok) {
-                messageEl.textContent = 'Perfil atualizado com sucesso!';
-                messageEl.style.backgroundColor = '#4caf50';
-                messageEl.style.color = 'white';
-                messageEl.style.display = 'block';
-                setTimeout(() => { messageEl.style.display = 'none'; }, 3000);
-            } else {
-                const err = await resp.json();
-                messageEl.textContent = 'Erro: ' + (err.email?.[0] || err.detail || 'Falha ao atualizar');
-                messageEl.style.backgroundColor = '#f44336';
-                messageEl.style.color = 'white';
-                messageEl.style.display = 'block';
-            }
-        } catch (err) {
-            messageEl.textContent = 'Erro de conexão. Tente novamente.';
-            messageEl.style.backgroundColor = '#f44336';
-            messageEl.style.color = 'white';
-            messageEl.style.display = 'block';
-        }
-    });
-});
-</script>
+<script src="{% static 'perfil.js' %}" defer></script>
 </body>
 </html>

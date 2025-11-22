@@ -7,6 +7,8 @@
   <title>Registrar - S.O.S Pets</title>
   <link rel="icon" type="image/png" href="{% static 'Estetica_site/Logo.png' %}">
   <link rel="stylesheet" href="{% static 'style.css' %}">
+  <script src="{% static 'toast-notifications.js' %}" defer></script>
+  <script src="{% static 'validations.js' %}" defer></script>
   <script src="{% static 'registro.js' %}" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,33 +20,85 @@
       <h2>Criar conta</h2>
 
       <div class="form-group">
-        <label for="first_name">Nome</label>
-        <input id="first_name" name="first_name" type="text" placeholder="Seu nome">
+        <label for="first_name">Nome Completo *</label>
+        <input 
+          id="first_name" 
+          name="first_name" 
+          type="text" 
+          required
+          minlength="3"
+          maxlength="100"
+          placeholder="Nome e Sobrenome"
+          title="Digite seu nome completo (mínimo 3 caracteres)"
+        >
       </div>
 
       <div class="form-group">
-        <label for="username">Usuário</label>
-        <input id="username" name="username" type="text" required placeholder="seu_usuario">
+        <label for="username">Usuário *</label>
+        <input 
+          id="username" 
+          name="username" 
+          type="text" 
+          required
+          minlength="3"
+          maxlength="30"
+          pattern="[a-zA-Z0-9._]+"
+          placeholder="seu_usuario"
+          title="Apenas letras, números, ponto e underscore (mínimo 3 caracteres)"
+        >
       </div>
 
       <div class="form-group">
-        <label for="email">E-mail</label>
-        <input id="email" name="email" type="email" required placeholder="voce@email.com">
+        <label for="email">E-mail *</label>
+        <input 
+          id="email" 
+          name="email" 
+          type="email" 
+          required
+          maxlength="254"
+          placeholder="voce@email.com"
+          title="Digite um e-mail válido"
+        >
       </div>
 
       <div class="form-group">
         <label for="telefone">Telefone (opcional)</label>
-        <input id="telefone" name="telefone" type="text" placeholder="(11) 90000-0000">
+        <input 
+          id="telefone" 
+          name="telefone" 
+          type="tel"
+          maxlength="20"
+          placeholder="(11) 99999-9999"
+          title="Formato: (11) 99999-9999"
+        >
       </div>
 
       <div class="form-group">
-        <label for="password">Senha</label>
-        <input id="password" name="password" type="password" required>
+        <label for="password">Senha *</label>
+        <input 
+          id="password" 
+          name="password" 
+          type="password" 
+          required
+          minlength="6"
+          maxlength="128"
+          placeholder="Mínimo 6 caracteres"
+          title="Senha deve ter pelo menos 6 caracteres e não pode conter apenas números"
+        >
       </div>
 
       <div class="form-group">
-        <label for="password2">Confirmar senha</label>
-        <input id="password2" name="password2" type="password" required>
+        <label for="password2">Confirmar Senha *</label>
+        <input 
+          id="password2" 
+          name="password2" 
+          type="password" 
+          required
+          minlength="6"
+          maxlength="128"
+          placeholder="Digite a senha novamente"
+          title="As senhas devem coincidir"
+        >
       </div>
 
       <button type="submit" class="btn-submit">Registrar</button>

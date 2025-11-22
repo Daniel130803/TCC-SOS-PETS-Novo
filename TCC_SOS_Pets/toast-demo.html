@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Toast - Exemplo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div style="padding: 2rem; max-width: 800px; margin: 0 auto;">
+        <h1>🎨 Sistema de Mensagens Amigáveis</h1>
+        <p>Demonstração do sistema de notificações Toast do S.O.S Pets</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem;">
+            <button onclick="toast.success('Operação realizada com sucesso!')" style="padding: 1rem; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                ✅ Sucesso
+            </button>
+            
+            <button onclick="toast.error('Erro ao processar sua solicitação!')" style="padding: 1rem; background: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                ❌ Erro
+            </button>
+            
+            <button onclick="toast.warning('Atenção: Verifique os dados!')" style="padding: 1rem; background: #ff9800; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                ⚠️ Aviso
+            </button>
+            
+            <button onclick="toast.info('Informação importante para você!')" style="padding: 1rem; background: #2196F3; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                ℹ️ Info
+            </button>
+        </div>
+
+        <h2 style="margin-top: 3rem;">📝 Exemplos de Uso</h2>
+        
+        <h3>1. Mensagens Simples</h3>
+        <pre style="background: #f5f5f5; padding: 1rem; border-radius: 8px; overflow-x: auto;"><code>// Sucesso
+toast.success('Animal cadastrado com sucesso!');
+
+// Erro
+toast.error('Erro ao enviar formulário!');
+
+// Aviso
+toast.warning('Preencha todos os campos obrigatórios!');
+
+// Informação
+toast.info('Você tem 3 novas notificações!');</code></pre>
+
+        <h3>2. Com Duração Personalizada</h3>
+        <pre style="background: #f5f5f5; padding: 1rem; border-radius: 8px; overflow-x: auto;"><code>// Toast que fica 10 segundos
+showToast('Mensagem importante', 'success', 10000);
+
+// Toast permanente (precisa fechar manualmente)
+showToast('Atenção crítica!', 'warning', 0);</code></pre>
+
+        <h3>3. Tratamento de Erros da API</h3>
+        <pre style="background: #f5f5f5; padding: 1rem; border-radius: 8px; overflow-x: auto;"><code>try {
+  const response = await fetch('/api/animais/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  
+  if (!response.ok) {
+    await handleFetchError(response);
+    return;
+  }
+  
+  toast.success('Animal cadastrado com sucesso!');
+} catch (error) {
+  toast.error('Erro de conexão. Tente novamente.');
+}</code></pre>
+
+        <h3>4. Validação de Formulários</h3>
+        <pre style="background: #f5f5f5; padding: 1rem; border-radius: 8px; overflow-x: auto;"><code>const form = document.getElementById('meu-form');
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  
+  if (!validateForm(form)) {
+    toast.error('Corrija os erros no formulário');
+    return;
+  }
+  
+  // Continua o envio...
+});</code></pre>
+
+        <h3>5. Loading em Botões</h3>
+        <pre style="background: #f5f5f5; padding: 1rem; border-radius: 8px; overflow-x: auto;"><code>const btn = document.querySelector('button[type="submit"]');
+
+setButtonLoading(btn, true); // Ativa loading
+
+// Após operação
+setButtonLoading(btn, false); // Desativa loading</code></pre>
+
+        <h2 style="margin-top: 3rem;">🎯 Mensagens Traduzidas Automaticamente</h2>
+        <p>O sistema traduz automaticamente erros técnicos da API para mensagens amigáveis:</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+            <thead>
+                <tr style="background: #f5f5f5;">
+                    <th style="padding: 0.75rem; text-align: left; border: 1px solid #ddd;">Erro da API</th>
+                    <th style="padding: 0.75rem; text-align: left; border: 1px solid #ddd;">Mensagem Amigável</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #ddd;"><code>Invalid credentials</code></td>
+                    <td style="padding: 0.75rem; border: 1px solid #ddd;">Usuário ou senha incorretos. Tente novamente.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #ddd;"><code>This field may not be blank</code></td>
+                    <td style="padding: 0.75rem; border: 1px solid #ddd;">Este campo não pode ficar em branco.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #ddd;"><code>Email already exists</code></td>
+                    <td style="padding: 0.75rem; border: 1px solid #ddd;">Este e-mail já está cadastrado.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #ddd;"><code>Permission denied</code></td>
+                    <td style="padding: 0.75rem; border: 1px solid #ddd;">Você não tem permissão para realizar esta ação.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem; border: 1px solid #ddd;"><code>Failed to fetch</code></td>
+                    <td style="padding: 0.75rem; border: 1px solid #ddd;">Erro de conexão. Verifique sua internet.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 style="margin-top: 3rem;">📦 Inclusão nos HTMLs</h2>
+        <pre style="background: #f5f5f5; padding: 1rem; border-radius: 8px; overflow-x: auto;"><code>&lt;!-- Adicione ANTES de outros scripts JS --&gt;
+&lt;script src="toast-notifications.js"&gt;&lt;/script&gt;
+&lt;script src="login.js"&gt;&lt;/script&gt;</code></pre>
+
+        <h2 style="margin-top: 3rem;">✨ Recursos</h2>
+        <ul>
+            <li>✅ Animações suaves de entrada/saída</li>
+            <li>✅ Responsivo para mobile</li>
+            <li>✅ Acessível (ARIA labels)</li>
+            <li>✅ Empilhamento automático</li>
+            <li>✅ Fechamento manual ou automático</li>
+            <li>✅ Tradução automática de erros técnicos</li>
+            <li>✅ Validação de formulários integrada</li>
+            <li>✅ Prevenção de XSS</li>
+        </ul>
+    </div>
+
+    <!-- Scripts -->
+    <script src="toast-notifications.js"></script>
+    
+    <script>
+        // Demonstração ao carregar página
+        setTimeout(() => {
+            toast.info('Sistema de notificações carregado! Teste os botões acima.');
+        }, 500);
+    </script>
+</body>
+</html>

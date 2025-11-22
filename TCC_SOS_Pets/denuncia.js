@@ -59,14 +59,55 @@ form.addEventListener('submit', async function(e) {
 
     const token = localStorage.getItem('access');
     if (!token) {
-        alert('Você precisa estar logado para fazer uma denúncia.');
-        window.location.href = '/login/';
+        toast.error('Você precisa estar logado para fazer uma denúncia.');
+        setTimeout(() => { window.location.href = '/login/'; }, 1500);
         return;
     }
 
+    const categoria = document.getElementById('categoria').value;
+    const descricao = document.getElementById('descricao').value.trim();
+    const localInput = document.getElementById('local').value.trim();
+    const estado = document.getElementById('estado').value;
+    const municipio = document.getElementById('municipio').value;
+    
+    // Validações robustas
+    const validacoes = {
+        categoria: categoria ? { valid: true, message: '' } : { valid: false, message: 'Selecione uma categoria' },
+        descricao: validateTexto(descricao, 'Descrição', 30, 3000),
+        local: validateTexto(localInput, 'Local', 10, 500),
+        estado: estado ? { valid: true, message: '' } : { valid: false, message: 'Selecione o estado' },
+        municipio: municipio ? { valid: true, message: '' } : { valid: false, message: 'Selecione o município' }
+    };
+    
+    const valido = validateForm(validacoes);
+    if (!valido) return;
+    
+    // Validação de arquivos
+    if (arquivosSelecionados.length > 0) {
+        for (let arquivo of arquivosSelecionados) {
+            const tipoArquivo = arquivo.type.split('/')[0];
+            
+            if (tipoArquivo === 'image') {
+                const validacaoImagem = validateImagem(arquivo, 5);
+                if (!validacaoImagem.valid) {
+                    toast.error(validacaoImagem.message);
+                    return;
+                }
+            } else if (tipoArquivo === 'video') {
+                const validacaoVideo = validateVideo(arquivo, 20);
+                if (!validacaoVideo.valid) {
+                    toast.error(validacaoVideo.message);
+                    return;
+                }
+            } else {
+                toast.error('Por favor, envie apenas arquivos de imagem (JPG, PNG, WebP) ou vídeo (MP4, AVI, MOV).');
+                return;
+            }
+        }
+    }
+
     const formData = new FormData();
-    const descricao = document.getElementById('descricao').value;
-    let localizacao = `${document.getElementById('local').value}, ${document.getElementById('municipio').value}/${document.getElementById('estado').value}`;
+    let localizacao = `${localInput}, ${municipio}/${estado}`;
     
     // Adiciona coordenadas à localização se disponíveis
     const latitude = document.getElementById('latitude').value;
@@ -76,15 +117,13 @@ form.addEventListener('submit', async function(e) {
         localizacao += ` (Coordenadas: ${latitude}, ${longitude})`;
     }
     
-    // Cria um título resumido da descrição (primeiras palavras)
-    const tituloAuto = descricao.length > 50 ? descricao.substring(0, 50) + '...' : descricao;
-    
-    // Pega a categoria selecionada
-    const categoria = document.getElementById('categoria').value;
+    // Sanitização
+    const descricaoLimpa = sanitizeInput(descricao);
+    const tituloAuto = descricaoLimpa.length > 50 ? descricaoLimpa.substring(0, 50) + '...' : descricaoLimpa;
     
     formData.append('titulo', tituloAuto);
     formData.append('categoria', categoria);
-    formData.append('descricao', descricao);
+    formData.append('descricao', descricaoLimpa);
     formData.append('localizacao', localizacao);
     
     // Processa arquivos do array acumulado
@@ -115,7 +154,7 @@ form.addEventListener('submit', async function(e) {
                     formData.append('videos_adicionais', arquivo);
                 }
             } else {
-                alert('Por favor, envie apenas arquivos de imagem (JPG, PNG, GIF) ou vídeo (MP4, AVI, MOV).');
+                toast.error('Por favor, envie apenas arquivos de imagem (JPG, PNG, GIF) ou vídeo (MP4, AVI, MOV).');
                 return;
             }
         }
@@ -137,10 +176,10 @@ form.addEventListener('submit', async function(e) {
 
         if (!response.ok) {
             if (response.status === 401) {
-                alert('Sua sessão expirou. Faça login novamente.');
+                toast.error('Sua sessão expirou. Faça login novamente.');
                 localStorage.removeItem('access');
                 localStorage.removeItem('refresh');
-                window.location.href = '/login/';
+                setTimeout(() => { window.location.href = '/login/'; }, 1500);
                 return;
             }
             
@@ -158,7 +197,7 @@ form.addEventListener('submit', async function(e) {
             throw new Error(mensagemErro);
         }
 
-        alert('Denúncia enviada com sucesso! Ela será analisada por nossa equipe.');
+        toast.success('✅ Denúncia enviada com sucesso! Ela será analisada por nossa equipe.');
         form.reset();
         municipioSelect.disabled = true;
         municipioSelect.innerHTML = '<option value="">Selecione um estado primeiro</option>';
@@ -177,7 +216,8 @@ form.addEventListener('submit', async function(e) {
 
     } catch (error) {
         console.error('Erro:', error);
-        alert(error.message || 'Erro ao enviar denúncia. Por favor, tente novamente.');
+        const friendlyMessage = getFriendlyErrorMessage(error.message);
+        toast.error(friendlyMessage || 'Erro ao enviar denúncia. Por favor, tente novamente.');
     } finally {
         button.disabled = false;
         button.innerHTML = originalText;
@@ -273,7 +313,7 @@ const coordenadasDisplay = document.getElementById('coordenadas-display');
 // Inicializar mapa ao clicar no botão
 btnMostrarMapa.addEventListener('click', function() {
     if (!estadoSelect.value || !municipioSelect.value || !localInput.value) {
-        alert('Por favor, preencha Estado, Município e Local antes de localizar no mapa.');
+        toast.warning('Por favor, preencha Estado, Município e Local antes de localizar no mapa.');
         return;
     }
     
@@ -353,13 +393,13 @@ async function geocodeAddress() {
             // Adiciona popup informativo
             marker.bindPopup(`<b>Local da Denúncia</b><br>${endereco}`).openPopup();
         } else {
-            alert('Não foi possível localizar o endereço automaticamente. Você pode ajustar o marcador manualmente no mapa.');
+            toast.info('Não foi possível localizar o endereço automaticamente. Você pode ajustar o marcador manualmente no mapa.');
             // Tenta pelo menos centralizar no município
             geocodeMunicipio();
         }
     } catch (error) {
         console.error('Erro no geocoding:', error);
-        alert('Erro ao buscar localização. Você pode ajustar o marcador manualmente no mapa.');
+        toast.error('Erro ao buscar localização. Você pode ajustar o marcador manualmente no mapa.');
         geocodeMunicipio();
     }
 }

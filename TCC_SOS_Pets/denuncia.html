@@ -143,12 +143,18 @@
                 
                 <div class="form-group">
                     <label for="envolvido">Nome do Envolvido (se souber)</label>
-                    <input type="text" id="envolvido" name="envolvido">
+                    <input 
+                        type="text" 
+                        id="envolvido" 
+                        name="envolvido" 
+                        maxlength="200"
+                        title="Nome do envolvido"
+                    >
                 </div>
 
                 <div class="form-group">
                     <label for="estado">Estado</label>
-                    <select id="estado" name="estado" required>
+                    <select id="estado" name="estado" required title="Selecione o estado">
                         <option value="">Selecione o Estado...</option>
                         <option value="AC">Acre</option><option value="AL">Alagoas</option><option value="AP">Amapá</option><option value="AM">Amazonas</option><option value="BA">Bahia</option><option value="CE">Ceará</option><option value="DF">Distrito Federal</option><option value="ES">Espírito Santo</option><option value="GO">Goiás</option><option value="MA">Maranhão</option><option value="MT">Mato Grosso</option><option value="MS">Mato Grosso do Sul</option><option value="MG">Minas Gerais</option><option value="PA">Pará</option><option value="PB">Paraíba</option><option value="PR">Paraná</option><option value="PE">Pernambuco</option><option value="PI">Piauí</option><option value="RJ">Rio de Janeiro</option><option value="RN">Rio Grande do Norte</option><option value="RS">Rio Grande do Sul</option><option value="RO">Rondônia</option><option value="RR">Roraima</option><option value="SC">Santa Catarina</option><option value="SP">São Paulo</option><option value="SE">Sergipe</option><option value="TO">Tocantins</option>
                     </select>
@@ -163,7 +169,16 @@
                 
                 <div class="form-group">
                     <label for="local">Local do Ocorrido (Endereço e ponto de referência)</label>
-                    <input type="text" id="local" name="local" required>
+                    <input 
+                        type="text" 
+                        id="local" 
+                        name="local" 
+                        required 
+                        minlength="10" 
+                        maxlength="500"
+                        placeholder="Ex: Rua das Flores, 123, próximo ao mercado"
+                        title="Descreva o local com pelo menos 10 caracteres"
+                    >
                     <button type="button" class="btn-localizar" id="btn-mostrar-mapa" style="margin-top: 10px;">
                         <i class="fas fa-map-marked-alt"></i> Localizar no Mapa
                     </button>
@@ -192,7 +207,16 @@
 
                 <div class="form-group">
                     <label for="descricao">Descrição dos Fatos</label>
-                    <textarea id="descricao" name="descricao" rows="8" placeholder="Descreva com o máximo de detalhes o que aconteceu, as datas, os animais envolvidos, etc." required></textarea>
+                    <textarea 
+                        id="descricao" 
+                        name="descricao" 
+                        rows="8" 
+                        required 
+                        minlength="30" 
+                        maxlength="3000"
+                        placeholder="Descreva com o máximo de detalhes o que aconteceu, as datas, os animais envolvidos, etc. (mínimo 30 caracteres)"
+                        title="Descrição deve ter entre 30 e 3000 caracteres"
+                    ></textarea>
                 </div>
 
                 <div class="form-group">
@@ -235,6 +259,8 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     
+    <script src="{% static 'toast-notifications.js' %}" defer></script>
+    <script src="{% static 'validations.js' %}" defer></script>
     <script src="{% static 'user_session.js' %}" defer></script>
     <script src="{% static 'denuncia.js' %}" defer></script>
 </body>

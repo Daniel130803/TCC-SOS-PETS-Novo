@@ -41,7 +41,7 @@
             <form class="contact-form" action="#" method="post">
                 <div class="form-group">
                     <label for="assunto">Assunto</label>
-                    <select id="assunto" name="assunto" required>
+                    <select id="assunto" name="assunto" required title="Selecione um assunto">
                         <option value="" disabled selected>Selecione um assunto</option>
                         <option value="parceria">Parceria</option>
                         <option value="sugestao">Sugestão para a empresa</option>
@@ -51,17 +51,41 @@
 
                 <div class="form-group">
                     <label for="email">Email para retorno</label>
-                    <input type="email" id="email" name="email" placeholder="seuemail@exemplo.com" required>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        required 
+                        maxlength="254"
+                        placeholder="seuemail@exemplo.com" 
+                        title="Digite um e-mail válido"
+                    >
                 </div>
 
                 <div class="form-group">
                     <label for="telefone">Telefone com WhatsApp (Opcional)</label>
-                    <input type="tel" id="telefone" name="telefone" placeholder="Insira seu telefone com DDD">
+                    <input 
+                        type="tel" 
+                        id="telefone" 
+                        name="telefone" 
+                        maxlength="20"
+                        placeholder="(11) 99999-9999"
+                        title="Formato: (11) 99999-9999"
+                    >
                 </div>
 
                 <div class="form-group">
                     <label for="mensagem">Mensagem</label>
-                    <textarea id="mensagem" name="mensagem" rows="7" placeholder="Escreva sua mensagem aqui..." required></textarea>
+                    <textarea 
+                        id="mensagem" 
+                        name="mensagem" 
+                        rows="7" 
+                        required 
+                        minlength="10" 
+                        maxlength="5000"
+                        placeholder="Escreva sua mensagem aqui (mínimo 10 caracteres)..."
+                        title="Mensagem deve ter entre 10 e 5000 caracteres"
+                    ></textarea>
                 </div>
 
                 <button type="submit" class="btn-submit">Enviar Mensagem</button>
@@ -91,6 +115,8 @@
 </footer>
 
     <!-- <script src="{% static 'script.js' %}"></script> -->
+    <script src="{% static 'toast-notifications.js' %}" defer></script>
+    <script src="{% static 'validations.js' %}" defer></script>
     <script src="{% static 'user_session.js' %}" defer></script>
     <script src="{% static 'contato.js' %}" defer></script>
 </body>

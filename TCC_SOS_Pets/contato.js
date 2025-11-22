@@ -1,14 +1,28 @@
-// Sistema de Contato com Administrador
+/**
+ * contato.js
+ * 
+ * Sistema de Contato com Administrador
+ * - Preenche email automaticamente para usuários logados
+ * - Validação de formulário com Toast
+ * - Loading em botão de envio
+ * - Feedback visual com sistema Toast
+ */
+
 const API_BASE = 'http://localhost:8000/api';
 
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('.contact-form');
-    const assuntoSelect = document.getElementById('assunto');
-    const emailInput = document.getElementById('email');
-    const mensagemTextarea = document.getElementById('mensagem');
     
     // Preenche dados do usuário logado automaticamente
     preencherDadosUsuario();
+    
+    // Validação em tempo real
+    addRealtimeValidation('email', validateEmail);
+    addRealtimeValidation('telefone', (v) => v ? validateTelefone(v) : {valid: true, message: ''});
+    addRealtimeValidation('mensagem', (v) => validateTexto(v, 'Mensagem', 10, 5000));
+    
+    // Máscaras
+    applyMask('telefone', maskTelefone);
     
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -16,6 +30,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+/**
+ * Preenche email automaticamente se usuário estiver logado
+ */
 async function preencherDadosUsuario() {
     const token = localStorage.getItem('access');
     if (!token) return;
@@ -41,46 +58,55 @@ async function preencherDadosUsuario() {
     }
 }
 
+/**
+ * Envia mensagem de contato para o backend
+ */
 async function enviarContato() {
     const assunto = document.getElementById('assunto').value;
-    const email = document.getElementById('email').value;
-    const telefone = document.getElementById('telefone').value;
-    const mensagem = document.getElementById('mensagem').value;
+    const email = document.getElementById('email').value.trim();
+    const telefone = document.getElementById('telefone').value.trim();
+    const mensagem = document.getElementById('mensagem').value.trim();
+    const submitBtn = document.querySelector('.btn-submit');
     
-    // Validações
-    if (!assunto || !email || !mensagem) {
-        mostrarAlerta('Por favor, preencha todos os campos obrigatórios', 'erro');
-        return;
+    // Validações robustas
+    const validacoes = {
+        assunto: assunto ? { valid: true, message: '' } : { valid: false, message: 'Selecione um assunto' },
+        email: validateEmail(email),
+        mensagem: validateTexto(mensagem, 'Mensagem', 10, 5000)
+    };
+    
+    // Adiciona validação de telefone se preenchido
+    if (telefone) {
+        validacoes.telefone = validateTelefone(telefone);
     }
     
-    if (!validarEmail(email)) {
-        mostrarAlerta('Por favor, insira um e-mail válido', 'erro');
-        return;
-    }
+    const valido = validateForm(validacoes);
+    if (!valido) return;
+    
+    // Sanitização
+    const emailLimpo = sanitizeInput(email).toLowerCase();
+    const mensagemLimpa = sanitizeInput(mensagem);
     
     // Monta o assunto completo
     const assuntoCompleto = obterTextoAssunto(assunto);
     
     // Adiciona telefone à mensagem se fornecido
-    let mensagemCompleta = mensagem;
+    let mensagemCompleta = mensagemLimpa;
     if (telefone) {
+        const telefoneLimpo = telefone.replace(/\D/g, '');
         mensagemCompleta += `\n\n📱 Telefone/WhatsApp: ${telefone}`;
     }
     
-    // Prepara dados - nome será preenchido pelo backend se usuário estiver logado
-    // Caso contrário, usa o email como nome temporário
+    // Prepara dados
     const dados = {
-        nome: email.split('@')[0], // Usa a parte antes do @ como nome padrão
+        nome: emailLimpo.split('@')[0], // Usa a parte antes do @ como nome padrão
         assunto: assuntoCompleto,
-        email: email,
+        email: emailLimpo,
         mensagem: mensagemCompleta
     };
     
-    // Mostra loading
-    const submitBtn = document.querySelector('.btn-submit');
-    const textoOriginal = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-    submitBtn.disabled = true;
+    // Estado de loading
+    setButtonLoading(submitBtn, true);
     
     try {
         const token = localStorage.getItem('access');
@@ -102,13 +128,13 @@ async function enviarContato() {
         if (!response.ok) {
             const errorData = await response.json();
             console.error('Erro do servidor:', errorData);
-            throw new Error(errorData.detail || 'Erro ao enviar mensagem');
+            const friendlyMessage = getFriendlyErrorMessage(errorData);
+            toast.error(friendlyMessage);
+            return;
         }
         
-        const resultado = await response.json();
-        
         // Sucesso
-        mostrarAlerta('Mensagem enviada com sucesso! Em breve você receberá uma resposta.', 'sucesso');
+        toast.success('✅ Mensagem enviada com sucesso! Em breve você receberá uma resposta.');
         
         // Limpa o formulário
         document.querySelector('.contact-form').reset();
@@ -116,21 +142,21 @@ async function enviarContato() {
         // Se usuário estiver logado, sugere ir para Minhas Solicitações
         if (token) {
             setTimeout(() => {
-                if (confirm('Deseja acompanhar suas mensagens em "Minhas Solicitações"?')) {
-                    window.location.href = '/minhas-solicitacoes/?tab=contatos';
-                }
+                toast.info('Você pode acompanhar suas mensagens em "Minhas Solicitações"', 5000);
             }, 2000);
         }
         
     } catch (error) {
         console.error('Erro:', error);
-        mostrarAlerta(error.message || 'Erro ao enviar mensagem. Tente novamente.', 'erro');
+        toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
     } finally {
-        submitBtn.innerHTML = textoOriginal;
-        submitBtn.disabled = false;
+        setButtonLoading(submitBtn, false);
     }
 }
 
+/**
+ * Retorna texto legível do assunto selecionado
+ */
 function obterTextoAssunto(valor) {
     const assuntos = {
         'parceria': 'Parceria',
@@ -138,112 +164,4 @@ function obterTextoAssunto(valor) {
         'duvidas': 'Dúvidas Gerais'
     };
     return assuntos[valor] || valor;
-}
-
-function validarEmail(email) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-}
-
-function mostrarAlerta(mensagem, tipo) {
-    // Remove alertas anteriores
-    const alertaExistente = document.querySelector('.alerta-contato');
-    if (alertaExistente) {
-        alertaExistente.remove();
-    }
-    
-    // Cria novo alerta
-    const alerta = document.createElement('div');
-    alerta.className = `alerta-contato alerta-${tipo}`;
-    alerta.innerHTML = `
-        <div class="alerta-conteudo">
-            <i class="fas fa-${tipo === 'sucesso' ? 'check-circle' : 'exclamation-circle'}"></i>
-            <span>${mensagem}</span>
-            <button onclick="this.parentElement.parentElement.remove()" class="alerta-fechar">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    `;
-    
-    // Adiciona estilos
-    const style = document.createElement('style');
-    style.textContent = `
-        .alerta-contato {
-            position: fixed;
-            top: 100px;
-            right: 20px;
-            z-index: 99999;
-            min-width: 350px;
-            max-width: 500px;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            animation: slideInRight 0.3s ease;
-        }
-        
-        @keyframes slideInRight {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        .alerta-sucesso {
-            background: linear-gradient(135deg, #d4edda, #c3e6cb);
-            border-left: 5px solid #28a745;
-            color: #155724;
-        }
-        
-        .alerta-erro {
-            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
-            border-left: 5px solid #dc3545;
-            color: #721c24;
-        }
-        
-        .alerta-conteudo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .alerta-conteudo i:first-child {
-            font-size: 1.5rem;
-        }
-        
-        .alerta-conteudo span {
-            flex: 1;
-            font-weight: 600;
-        }
-        
-        .alerta-fechar {
-            background: rgba(0,0,0,0.1);
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        
-        .alerta-fechar:hover {
-            background: rgba(0,0,0,0.2);
-            transform: rotate(90deg);
-        }
-    `;
-    
-    document.head.appendChild(style);
-    document.body.appendChild(alerta);
-    
-    // Remove automaticamente após 5 segundos
-    setTimeout(() => {
-        alerta.style.animation = 'slideOutRight 0.3s ease';
-        setTimeout(() => alerta.remove(), 300);
-    }, 5000);
 }

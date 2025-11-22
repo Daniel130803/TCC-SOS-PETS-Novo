@@ -434,26 +434,62 @@ window.closePetDetailsModal = closePetDetailsModal;
 async function submitLostPet(event) {
     event.preventDefault();
     
-    const formData = new FormData(event.target);
     const token = localStorage.getItem('access');
     
     console.log('🐾 Iniciando submissão do formulário de pet perdido');
     
     if (!token) {
-        alert('Você precisa estar logado para registrar um pet perdido.');
-        window.location.href = '/login/';
+        toast.error('Você precisa estar logado para registrar um pet perdido.');
+        setTimeout(() => { window.location.href = '/login/'; }, 1500);
         return;
     }
     
-    // Log dos dados do formulário
-    console.log('📋 Dados do formulário:');
-    for (let [key, value] of formData.entries()) {
-        if (value instanceof File) {
-            console.log(`  ${key}: ${value.name} (${value.size} bytes)`);
-        } else {
-            console.log(`  ${key}: ${value}`);
-        }
+    // Validações robustas
+    const nome = document.getElementById('lost-nome').value.trim();
+    const especie = document.getElementById('lost-especie').value;
+    const cor = document.getElementById('lost-cor').value.trim();
+    const caracteristicas = document.getElementById('lost-caracteristicas').value.trim();
+    const descricao = document.getElementById('lost-descricao').value.trim();
+    const endereco = document.getElementById('lost-endereco').value.trim();
+    const bairro = document.getElementById('lost-bairro').value.trim();
+    const cidade = document.getElementById('lost-cidade').value.trim();
+    const latitude = document.getElementById('lost-latitude').value;
+    const longitude = document.getElementById('lost-longitude').value;
+    
+    const validacoes = {
+        nome: validateTexto(nome, 'Nome do Pet', 2, 100),
+        especie: especie ? { valid: true, message: '' } : { valid: false, message: 'Selecione a espécie' },
+        cor: validateTexto(cor, 'Cor', 3, 50),
+        caracteristicas: validateTexto(caracteristicas, 'Características', 10, 500),
+        descricao: validateTexto(descricao, 'Descrição', 20, 2000),
+        endereco: validateTexto(endereco, 'Endereço', 5, 300),
+        bairro: validateTexto(bairro, 'Bairro', 3, 100),
+        cidade: validateTexto(cidade, 'Cidade', 3, 100),
+        localizacao: (latitude && longitude) ? { valid: true, message: '' } : { valid: false, message: 'Clique em "Localizar no Mapa" e selecione a localização' }
+    };
+    
+    // Valida imagem se presente
+    const imagem = document.getElementById('lost-imagem-principal')?.files[0];
+    if (imagem) {
+        validacoes.imagem = validateImagem(imagem, 5);
     }
+    
+    const valido = validateForm(validacoes);
+    if (!valido) return;
+    
+    const formData = new FormData(event.target);
+    
+    // Sanitiza campos de texto
+    formData.set('nome', sanitizeInput(nome));
+    formData.set('cor', sanitizeInput(cor));
+    formData.set('caracteristicas_distintivas', sanitizeInput(caracteristicas));
+    formData.set('descricao', sanitizeInput(descricao));
+    formData.set('endereco', sanitizeInput(endereco));
+    formData.set('bairro', sanitizeInput(bairro));
+    formData.set('cidade', sanitizeInput(cidade));
+    
+    // Log dos dados do formulário
+    console.log('📋 Dados do formulário validados e sanitizados');
     
     try {
         console.log('🚀 Enviando requisição para:', `${API_BASE_URL}/pets-perdidos/`);
@@ -513,12 +549,13 @@ async function submitLostPet(event) {
         const result = await response.json();
         console.log('✅ Pet registrado com sucesso:', result);
         
-        alert('Pet registrado com sucesso! Vamos ajudar a encontrá-lo.');
+        toast.success('✅ Pet registrado com sucesso! Vamos ajudar a encontrá-lo.');
         if(window.fecharModalLost) window.fecharModalLost();
         loadPetsPerdidos();
     } catch (error) {
         console.error('💥 Erro durante submissão:', error);
-        alert(error.message);
+        const friendlyMessage = getFriendlyErrorMessage(error.message);
+        toast.error(friendlyMessage);
     }
 }
 
@@ -545,15 +582,16 @@ async function submitFoundPet(event) {
         
         // Mostra mensagem de sucesso com possíveis matches
         if (result.possiveis_matches && result.possiveis_matches.length > 0) {
-            alert(`Reporte enviado! Encontramos ${result.possiveis_matches.length} possível(is) match(es). Nossa equipe entrará em contato em breve.`);
+            toast.success(`✅ Reporte enviado! Encontramos ${result.possiveis_matches.length} possível(is) match(es). Nossa equipe entrará em contato em breve.`, 6000);
         } else {
-            alert('Reporte enviado com sucesso! Nossa equipe analisará e entrará em contato se encontrarmos um match.');
+            toast.success('Reporte enviado com sucesso! Nossa equipe analisará e entrará em contato se encontrarmos um match.');
         }
         
         if(window.fecharModalFound) window.fecharModalFound();
     } catch (error) {
         console.error('Erro:', error);
-        alert(error.message);
+        const friendlyMessage = getFriendlyErrorMessage(error.message);
+        toast.error(friendlyMessage);
     }
 }
 
@@ -903,6 +941,9 @@ function debounce(func, wait) {
     };
 }
 
+/**
+ * Exibe mensagem de erro usando Toast
+ */
 function showError(message) {
-    alert(message);
+    toast.error(message);
 }

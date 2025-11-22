@@ -7,11 +7,23 @@ from .models import (
 
 @admin.register(Usuario)
 class UsuarioAdmin(admin.ModelAdmin):
+    """
+    Admin para perfis estendidos de usuários.
+    
+    Exibe informações complementares dos usuários cadastrados no sistema,
+    como telefone, localização e data de cadastro.
+    """
     list_display = ('user', 'telefone', 'cidade', 'data_criacao')
     search_fields = ('user__username', 'telefone')
 
 @admin.register(Animal)
 class AnimalAdmin(admin.ModelAdmin):
+    """
+    Admin para gerenciar catálogo de animais da ONG.
+    
+    Permite administração completa dos animais cadastrados oficialmente
+    pela ONG, incluindo filtros por tipo, status e busca por nome/raça.
+    """
     list_display = ('nome', 'tipo', 'raca', 'status', 'data_criacao')
     list_filter = ('tipo', 'status')
     search_fields = ('nome', 'raca')
@@ -24,6 +36,17 @@ class AdocaoAdmin(admin.ModelAdmin):
 
 @admin.register(Denuncia)
 class DenunciaAdmin(admin.ModelAdmin):
+    """
+    Admin para gerenciar denúncias de maus-tratos.
+    
+    Permite moderação completa das denúncias com actions para:
+    - Aprovar denúncias verificadas
+    - Rejeitar denúncias inválidas
+    - Marcar como em andamento durante investigação
+    - Marcar como resolvidas após conclusão
+    
+    Inclui histórico automático de todas mudanças de status.
+    """
     list_display = ('titulo', 'usuario', 'localizacao', 'status', 'moderador', 'data_criacao')
     list_filter = ('status', 'data_criacao')
     search_fields = ('titulo', 'descricao', 'localizacao')
@@ -31,21 +54,34 @@ class DenunciaAdmin(admin.ModelAdmin):
     actions = ['aprovar_denuncias', 'rejeitar_denuncias', 'marcar_em_andamento', 'marcar_resolvidas']
 
     def aprovar_denuncias(self, request, queryset):
+        """Action para aprovar múltiplas denúncias em lote."""
+        # ATUALIZAÇÃO EM LOTE: Aprova todas as denúncias selecionadas
+        # Registra quem aprovou (moderador) para auditoria
+        # Mais eficiente que aprovar uma por uma manualmente
         updated = queryset.update(status='aprovada', moderador=request.user)
         self.message_user(request, f'{updated} denúncia(s) aprovada(s).')
     aprovar_denuncias.short_description = 'Aprovar denúncias selecionadas'
 
     def rejeitar_denuncias(self, request, queryset):
+        """Action para rejeitar múltiplas denúncias em lote."""
+        # REJEIÇÃO EM LOTE: Marca denúncias como rejeitadas
+        # Usado para denúncias falsas, duplicadas ou sem evidências
         updated = queryset.update(status='rejeitada', moderador=request.user)
         self.message_user(request, f'{updated} denúncia(s) rejeitada(s).')
     rejeitar_denuncias.short_description = 'Rejeitar denúncias selecionadas'
 
     def marcar_em_andamento(self, request, queryset):
+        """Action para marcar denúncias como em andamento."""
+        # WORKFLOW: Status intermediário entre aprovada e resolvida
+        # Indica que a ONG está investigando/tomando providências
         updated = queryset.update(status='em_andamento', moderador=request.user)
         self.message_user(request, f'{updated} denúncia(s) marcada(s) como em andamento.')
     marcar_em_andamento.short_description = 'Marcar como em andamento'
 
     def marcar_resolvidas(self, request, queryset):
+        """Action para marcar denúncias como resolvidas."""
+        # FINALIZAÇÃO: Denúncia foi resolvida (animal resgatado, caso encerrado, etc)
+        # Status final do workflow de moderação
         updated = queryset.update(status='resolvida', moderador=request.user)
         self.message_user(request, f'{updated} denúncia(s) marcada(s) como resolvida(s).')
     marcar_resolvidas.short_description = 'Marcar como resolvidas'
@@ -53,6 +89,20 @@ class DenunciaAdmin(admin.ModelAdmin):
 
 @admin.register(PetPerdido)
 class PetPerdidoAdmin(admin.ModelAdmin):
+    """
+    Admin para gerenciar pets perdidos.
+    
+    Permite administração dos pets cadastrados como perdidos com:
+    - Visualização de localização no mapa (lat/long)
+    - Controle de visibilidade (ativar/desativar no mapa)
+    - Marcação de pets encontrados
+    - Filtros por espécie, porte, status, estado
+    - Contador de visualizações
+    
+    Actions disponíveis:
+    - Marcar como encontrado: Define status e data de encontro
+    - Ativar/Desativar no mapa: Controla visibilidade pública
+    """
     list_display = ('nome', 'especie', 'cidade', 'estado', 'status', 'ativo', 'data_perda', 'data_criacao')
     list_filter = ('especie', 'porte', 'status', 'ativo', 'estado', 'data_criacao')
     search_fields = ('nome', 'descricao', 'cidade', 'bairro', 'usuario__user__username')
@@ -60,17 +110,28 @@ class PetPerdidoAdmin(admin.ModelAdmin):
     actions = ['marcar_como_encontrado', 'ativar_pets', 'desativar_pets']
     
     def marcar_como_encontrado(self, request, queryset):
+        """Action para marcar pets como encontrados."""
         from django.utils import timezone
+        # FINALIZAÇÃO: Pet foi encontrado e reunido com o dono
+        # Define data de encontro e remove do mapa (ativo=False)
+        # Evita que continue aparecendo como perdido após reunião
         updated = queryset.update(status='encontrado', data_encontrado=timezone.now(), ativo=False)
         self.message_user(request, f'{updated} pet(s) marcado(s) como encontrado(s).')
     marcar_como_encontrado.short_description = 'Marcar como encontrado'
     
     def ativar_pets(self, request, queryset):
+        """Action para ativar pets no mapa."""
+        # VISIBILIDADE: Torna pets visíveis no mapa público
+        # Usado quando pet ainda está perdido e precisa de divulgação
         updated = queryset.update(ativo=True)
         self.message_user(request, f'{updated} pet(s) ativado(s) no mapa.')
     ativar_pets.short_description = 'Ativar no mapa'
     
     def desativar_pets(self, request, queryset):
+        """Action para desativar pets no mapa."""
+        # OCULTAÇÃO: Remove pets do mapa sem deletar registro
+        # Usado quando dono desiste de busca ou pet foi encontrado
+        # Mantém registro no banco para histórico/estatísticas
         updated = queryset.update(ativo=False)
         self.message_user(request, f'{updated} pet(s) desativado(s) do mapa.')
     desativar_pets.short_description = 'Desativar do mapa'
@@ -78,6 +139,22 @@ class PetPerdidoAdmin(admin.ModelAdmin):
 
 @admin.register(ReportePetEncontrado)
 class ReportePetEncontradoAdmin(admin.ModelAdmin):
+    """
+    Admin para gerenciar reportes de pets encontrados.
+    
+    Interface para análise de pets encontrados e matching com pets perdidos:
+    - Exibe possíveis matches automáticos (baseados em localização e características)
+    - Permite confirmar match e notificar dono
+    - Controle de status (pendente, em análise, aprovado, rejeitado)
+    - Visualização de múltiplos matches simultâneos
+    
+    Actions disponíveis:
+    - Marcar em análise: Inicia processo de verificação
+    - Rejeitar reportes: Marca como falso positivo
+    
+    Note:
+        Sistema de matching automático calcula distância e compara características
+    """
     list_display = ('id', 'especie', 'cidade', 'estado', 'status', 'data_encontro', 'data_criacao', 'total_matches')
     list_filter = ('especie', 'porte', 'status', 'estado', 'data_criacao')
     search_fields = ('descricao', 'cidade', 'bairro', 'nome_pessoa', 'email_contato')
@@ -122,6 +199,22 @@ class ContatoAdmin(admin.ModelAdmin):
 
 @admin.register(AnimalParaAdocao)
 class AnimalParaAdocaoAdmin(admin.ModelAdmin):
+    """
+    Admin para moderar animais cadastrados por usuários.
+    
+    Gerencia animais que usuários comuns cadastram para doação:
+    - Aprovação antes de publicação (moderação)
+    - Rejeição com motivo
+    - Filtros por espécie, porte, status, localização
+    - Visualização de dados do doador
+    
+    Actions disponíveis:
+    - Aprovar pets: Libera para visualização pública
+    - Rejeitar pets: Impede publicação
+    
+    Note:
+        Endereço completo só é revelado após aprovação de solicitação
+    """
     list_display = ('nome', 'especie', 'porte', 'usuario_doador', 'cidade', 'estado', 'status', 'data_cadastro')
     list_filter = ('especie', 'porte', 'status', 'estado', 'data_cadastro')
     search_fields = ('nome', 'descricao', 'cidade', 'usuario_doador__user__username')
@@ -142,6 +235,22 @@ class AnimalParaAdocaoAdmin(admin.ModelAdmin):
 
 @admin.register(SolicitacaoAdocao)
 class SolicitacaoAdocaoAdmin(admin.ModelAdmin):
+    """
+    Admin para gerenciar solicitações de adoção.
+    
+    Permite moderação de pedidos de adoção de animais cadastrados por usuários:
+    - Aprovação libera contatos de doador para interessado
+    - Marca automaticamente animal como adotado ao aprovar
+    - Rejeição com data registrada
+    - Notificações automáticas para ambas partes
+    
+    Actions disponíveis:
+    - Aprovar solicitações: Conecta doador e interessado
+    - Rejeitar solicitações: Nega pedido de adoção
+    
+    Note:
+        Ao aprovar, animal é automaticamente marcado como adotado
+    """
     list_display = ('animal', 'usuario_interessado', 'status', 'data_solicitacao', 'data_aprovacao')
     list_filter = ('status', 'data_solicitacao')
     search_fields = ('animal__nome', 'usuario_interessado__user__username')

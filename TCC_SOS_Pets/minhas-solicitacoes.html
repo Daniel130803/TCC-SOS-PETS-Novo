@@ -1745,19 +1745,21 @@
 
                 if (!response.ok) throw new Error('Erro ao processar ação');
 
-                alert('Ação realizada com sucesso!');
+                toast.success('✅ Ação realizada com sucesso!');
                 fecharModal();
                 await loadAllTabs();
 
             } catch (error) {
                 console.error('Erro:', error);
-                alert('Erro ao processar ação. Tente novamente.');
+                const friendlyMessage = getFriendlyErrorMessage(error.message);
+                toast.error(friendlyMessage || 'Erro ao processar ação. Tente novamente.');
             }
         }
 
         // Inicializa ao carregar a página
         window.addEventListener('DOMContentLoaded', init);
     </script>
+    <script src="{% static 'toast-notifications.js' %}" defer></script>
     <script src="{% static 'user_session.js' %}" defer></script>
 </body>
 </html>

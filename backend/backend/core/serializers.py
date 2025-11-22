@@ -6,6 +6,10 @@ from .models import (
     AnimalParaAdocao, SolicitacaoAdocao, Notificacao, Contato,
     PetPerdido, PetPerdidoFoto, ReportePetEncontrado, ReportePetEncontradoFoto
 )
+from .utils import (
+    sanitize_text_field, sanitize_multiline_text, sanitize_email,
+    sanitize_phone_number, normalize_whitespace
+)
 
 class AnimalSerializer(serializers.ModelSerializer):
     imagem_absolute = serializers.SerializerMethodField()
@@ -56,13 +60,24 @@ class RegisterSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate_email(self, value):
+        # SANITIZAÇÃO: Normaliza e remove HTML/scripts
+        value = sanitize_email(value)
         if value and User.objects.filter(email__iexact=value).exists():
             raise serializers.ValidationError('E-mail já cadastrado.')
         return value
 
     def create(self, validated_data):
+        # SANITIZAÇÃO: Processa campos antes de criar
+        if 'username' in validated_data:
+            validated_data['username'] = sanitize_text_field(validated_data['username']).lower()
+        if 'first_name' in validated_data:
+            validated_data['first_name'] = sanitize_text_field(validated_data['first_name'])
+        
         # retira telefone do payload do User
         telefone = validated_data.pop('telefone', '')
+        if telefone:
+            telefone = sanitize_phone_number(telefone)
+        
         user = User.objects.create_user(**validated_data)
         Usuario.objects.create(user=user, telefone=telefone or '')
         return user
@@ -96,12 +111,19 @@ class UserUpdateSerializer(serializers.Serializer):
     telefone = serializers.CharField(required=False, allow_blank=True)
 
     def validate_email(self, value):
+        # SANITIZAÇÃO: Normaliza email
+        if value:
+            value = sanitize_email(value)
         user = self.context['request'].user
         if value and User.objects.filter(email__iexact=value).exclude(id=user.id).exists():
             raise serializers.ValidationError('Este e-mail já está em uso.')
         return value
 
     def update(self, instance, validated_data):
+        # SANITIZAÇÃO: Processa campos antes de atualizar
+        if 'first_name' in validated_data:
+            validated_data['first_name'] = sanitize_text_field(validated_data['first_name'])
+        
         # instance é User
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.email = validated_data.get('email', instance.email)
@@ -110,6 +132,7 @@ class UserUpdateSerializer(serializers.Serializer):
         # Atualiza telefone no perfil Usuario
         telefone = validated_data.get('telefone')
         if telefone is not None:
+            telefone = sanitize_phone_number(telefone)
             perfil, created = Usuario.objects.get_or_create(user=instance)
             perfil.telefone = telefone
             perfil.save()
@@ -184,6 +207,14 @@ class DenunciaSerializer(serializers.ModelSerializer):
         return DenunciaHistoricoSerializer(historico_qs, many=True).data
 
     def create(self, validated_data):
+        # SANITIZAÇÃO: Processa campos de texto
+        if 'titulo' in validated_data:
+            validated_data['titulo'] = sanitize_text_field(validated_data['titulo'])
+        if 'descricao' in validated_data:
+            validated_data['descricao'] = sanitize_multiline_text(validated_data['descricao'])
+        if 'localizacao' in validated_data:
+            validated_data['localizacao'] = sanitize_text_field(validated_data['localizacao'])
+        
         # Associa automaticamente o usuário autenticado
         request = self.context.get('request')
         if request and request.user.is_authenticated:
@@ -262,6 +293,24 @@ class AnimalParaAdocaoSerializer(serializers.ModelSerializer):
         return None
     
     def create(self, validated_data):
+        # SANITIZAÇÃO: Processa campos de texto
+        if 'nome' in validated_data:
+            validated_data['nome'] = sanitize_text_field(validated_data['nome']).title()
+        if 'descricao' in validated_data:
+            validated_data['descricao'] = sanitize_multiline_text(validated_data['descricao'])
+        if 'temperamento' in validated_data:
+            validated_data['temperamento'] = sanitize_multiline_text(validated_data['temperamento'])
+        if 'historico_saude' in validated_data:
+            validated_data['historico_saude'] = sanitize_multiline_text(validated_data['historico_saude'])
+        if 'caracteristicas_especiais' in validated_data:
+            validated_data['caracteristicas_especiais'] = sanitize_text_field(validated_data['caracteristicas_especiais'])
+        if 'cidade' in validated_data:
+            validated_data['cidade'] = sanitize_text_field(validated_data['cidade']).title()
+        if 'telefone' in validated_data:
+            validated_data['telefone'] = sanitize_phone_number(validated_data['telefone'])
+        if 'email' in validated_data:
+            validated_data['email'] = sanitize_email(validated_data['email'])
+        
         # Associa automaticamente o usuário autenticado como doador
         request = self.context.get('request')
         if request and request.user.is_authenticated:
@@ -271,7 +320,7 @@ class AnimalParaAdocaoSerializer(serializers.ModelSerializer):
         # Se selecionou "Outro" na cor, usa o valor do campo cor_outro
         cor_outro = request.data.get('cor_outro') if request else None
         if validated_data.get('cor') == 'Outro' and cor_outro:
-            validated_data['cor'] = cor_outro
+            validated_data['cor'] = sanitize_text_field(cor_outro)
         
         return super().create(validated_data)
 
@@ -293,6 +342,10 @@ class SolicitacaoAdocaoSerializer(serializers.ModelSerializer):
                            'notificado_doador', 'notificado_interessado']
     
     def create(self, validated_data):
+        # SANITIZAÇÃO: Processa mensagem
+        if 'mensagem' in validated_data:
+            validated_data['mensagem'] = sanitize_multiline_text(validated_data['mensagem'])
+        
         # Associa automaticamente o usuário autenticado como interessado
         request = self.context.get('request')
         if request and request.user.is_authenticated:
@@ -332,6 +385,16 @@ class ContatoSerializer(serializers.ModelSerializer):
                            'data_resposta', 'respondido_por', 'usuario_notificado']
     
     def create(self, validated_data):
+        # SANITIZAÇÃO: Processa campos de texto
+        if 'nome' in validated_data:
+            validated_data['nome'] = sanitize_text_field(validated_data['nome'])
+        if 'email' in validated_data:
+            validated_data['email'] = sanitize_email(validated_data['email'])
+        if 'assunto' in validated_data:
+            validated_data['assunto'] = sanitize_text_field(validated_data['assunto'])
+        if 'mensagem' in validated_data:
+            validated_data['mensagem'] = sanitize_multiline_text(validated_data['mensagem'])
+        
         # Associa o usuário autenticado se estiver logado
         request = self.context.get('request')
         if request and request.user.is_authenticated:
@@ -414,6 +477,24 @@ class PetPerdidoSerializer(serializers.ModelSerializer):
         return obj.reportes_relacionados.filter(status='pendente').count()
     
     def create(self, validated_data):
+        # SANITIZAÇÃO: Processa campos de texto
+        if 'nome' in validated_data:
+            validated_data['nome'] = sanitize_text_field(validated_data['nome'])
+        if 'caracteristicas_distintivas' in validated_data:
+            validated_data['caracteristicas_distintivas'] = sanitize_multiline_text(validated_data['caracteristicas_distintivas'])
+        if 'descricao' in validated_data:
+            validated_data['descricao'] = sanitize_multiline_text(validated_data['descricao'])
+        if 'endereco' in validated_data:
+            validated_data['endereco'] = sanitize_text_field(validated_data['endereco'])
+        if 'bairro' in validated_data:
+            validated_data['bairro'] = sanitize_text_field(validated_data['bairro'])
+        if 'cidade' in validated_data:
+            validated_data['cidade'] = sanitize_text_field(validated_data['cidade'])
+        if 'telefone_contato' in validated_data:
+            validated_data['telefone_contato'] = sanitize_phone_number(validated_data['telefone_contato'])
+        if 'email_contato' in validated_data:
+            validated_data['email_contato'] = sanitize_email(validated_data['email_contato'])
+        
         # Associa automaticamente ao usuário logado
         request = self.context.get('request')
         if request and request.user.is_authenticated and hasattr(request.user, 'usuario'):
@@ -537,6 +618,26 @@ class ReportePetEncontradoSerializer(serializers.ModelSerializer):
         return round(distancia, 2)
     
     def create(self, validated_data):
+        # SANITIZAÇÃO: Processa campos de texto
+        if 'nome_pessoa' in validated_data:
+            validated_data['nome_pessoa'] = sanitize_text_field(validated_data['nome_pessoa'])
+        if 'telefone_contato' in validated_data:
+            validated_data['telefone_contato'] = sanitize_phone_number(validated_data['telefone_contato'])
+        if 'email_contato' in validated_data:
+            validated_data['email_contato'] = sanitize_email(validated_data['email_contato'])
+        if 'descricao' in validated_data:
+            validated_data['descricao'] = sanitize_multiline_text(validated_data['descricao'])
+        if 'caracteristicas_distintivas' in validated_data:
+            validated_data['caracteristicas_distintivas'] = sanitize_multiline_text(validated_data['caracteristicas_distintivas'])
+        if 'endereco' in validated_data:
+            validated_data['endereco'] = sanitize_text_field(validated_data['endereco'])
+        if 'bairro' in validated_data:
+            validated_data['bairro'] = sanitize_text_field(validated_data['bairro'])
+        if 'cidade' in validated_data:
+            validated_data['cidade'] = sanitize_text_field(validated_data['cidade'])
+        if 'local_temporario' in validated_data:
+            validated_data['local_temporario'] = sanitize_text_field(validated_data['local_temporario'])
+        
         # Associa automaticamente ao usuário logado se houver
         request = self.context.get('request')
         if request and request.user.is_authenticated and hasattr(request.user, 'usuario'):

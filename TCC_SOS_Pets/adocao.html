@@ -86,7 +86,7 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="pet-nome"><i class="fas fa-tag"></i> Nome do Pet *</label>
-                    <input type="text" id="pet-nome" name="nome" autocomplete="off" required placeholder="Ex: Totó">
+                    <input type="text" id="pet-nome" name="nome" autocomplete="off" required minlength="2" maxlength="100" placeholder="Ex: Totó" title="Nome deve ter entre 2 e 100 caracteres">
                 </div>
                 <div class="form-group">
                     <label for="pet-especie"><i class="fas fa-paw"></i> Espécie *</label>
@@ -159,7 +159,7 @@
             
             <div class="form-group" style="margin-bottom: 20px;">
                 <label for="pet-descricao"><i class="fas fa-align-left"></i> Descrição do Pet *</label>
-                <textarea id="pet-descricao" name="descricao" rows="4" autocomplete="off" required placeholder="Conte um pouco sobre o temperamento, comportamento, cuidados especiais, histórico..."></textarea>
+                <textarea id="pet-descricao" name="descricao" rows="4" autocomplete="off" required minlength="20" maxlength="2000" placeholder="Conte um pouco sobre o temperamento, comportamento, cuidados especiais, histórico..." title="Descrição deve ter entre 20 e 2000 caracteres"></textarea>
                 <small><i class="fas fa-lightbulb"></i> Quanto mais detalhes, melhor para encontrar um lar adequado!</small>
             </div>
             
@@ -185,7 +185,7 @@
             
             <div class="form-group" style="margin-bottom: 20px;">
                 <label for="pet-endereco"><i class="fas fa-home"></i> Endereço Completo *</label>
-                <input type="text" id="pet-endereco" name="endereco_completo" autocomplete="street-address" required placeholder="Rua, número, bairro...">
+                <input type="text" id="pet-endereco" name="endereco_completo" autocomplete="street-address" required minlength="10" maxlength="300" placeholder="Rua, número, bairro..." title="Endereço deve ter entre 10 e 300 caracteres">
                 <small style="color: #f39c12;"><i class="fas fa-lock"></i> Este endereço só será compartilhado após aprovação da adoção.</small>
             </div>
             
@@ -196,11 +196,11 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="pet-telefone"><i class="fas fa-mobile-alt"></i> Telefone/WhatsApp *</label>
-                    <input type="tel" id="pet-telefone" name="telefone" autocomplete="tel" required placeholder="(00) 00000-0000">
+                    <input type="tel" id="pet-telefone" name="telefone" autocomplete="tel" required maxlength="20" placeholder="(11) 99999-9999" title="Digite um telefone válido com DDD">
                 </div>
                 <div class="form-group">
                     <label for="pet-email"><i class="fas fa-envelope"></i> E-mail *</label>
-                    <input type="email" id="pet-email" name="email" autocomplete="email" required placeholder="seu@email.com">
+                    <input type="email" id="pet-email" name="email" autocomplete="email" required maxlength="254" placeholder="seu@email.com" title="Digite um e-mail válido">
                 </div>
             </div>
             
@@ -780,7 +780,7 @@
                 }catch(error){
                     console.error('Erro ao carregar cidades:', error);
                     cidadeSelectModal.innerHTML = '<option value="">Erro ao carregar cidades</option>';
-                    alert('Erro ao carregar cidades. Tente novamente.');
+                    toast.error('Erro ao carregar cidades. Tente novamente.');
                 }finally{
                     if(loadingIndicator) loadingIndicator.style.display = 'none';
                 }
@@ -915,6 +915,16 @@
         
         // Submit do formulário
         if(formCadastro){
+            // Adiciona validações em tempo real
+            addRealtimeValidation('pet-nome', (v) => validateTexto(v, 'Nome', 2, 100));
+            addRealtimeValidation('pet-descricao', (v) => validateTexto(v, 'Descrição', 20, 2000));
+            addRealtimeValidation('pet-endereco', (v) => validateTexto(v, 'Endereço', 10, 300));
+            addRealtimeValidation('pet-telefone', validateTelefone);
+            addRealtimeValidation('pet-email', validateEmail);
+            
+            // Aplica máscaras
+            applyMask('pet-telefone', maskTelefone);
+            
             formCadastro.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 console.log('📝 Formulário submetido!');
@@ -923,12 +933,52 @@
                 const refresh = localStorage.getItem('refresh');
                 
                 if(!token){
-                    alert('Você precisa estar logado para cadastrar um pet.');
-                    window.location.href = '/login/';
+                    toast.error('Você precisa estar logado para cadastrar um pet.');
+                    setTimeout(() => { window.location.href = '/login/'; }, 1500);
                     return;
                 }
                 
+                // Validações robustas
+                const nome = document.getElementById('pet-nome').value.trim();
+                const descricao = document.getElementById('pet-descricao').value.trim();
+                const endereco = document.getElementById('pet-endereco').value.trim();
+                const telefone = document.getElementById('pet-telefone').value.trim();
+                const email = document.getElementById('pet-email').value.trim();
+                const especie = document.getElementById('pet-especie').value;
+                const estado = document.getElementById('pet-estado').value;
+                const cidade = document.getElementById('pet-cidade').value;
+                const imagem = document.getElementById('pet-imagem').files[0];
+                
+                const validacoes = {
+                    nome: validateTexto(nome, 'Nome do Pet', 2, 100),
+                    descricao: validateTexto(descricao, 'Descrição', 20, 2000),
+                    endereco: validateTexto(endereco, 'Endereço', 10, 300),
+                    telefone: validateTelefone(telefone),
+                    email: validateEmail(email),
+                    especie: especie ? { valid: true, message: '' } : { valid: false, message: 'Selecione a espécie' },
+                    estado: estado ? { valid: true, message: '' } : { valid: false, message: 'Selecione o estado' },
+                    cidade: cidade ? { valid: true, message: '' } : { valid: false, message: 'Selecione a cidade' }
+                };
+                
+                // Valida imagem
+                if (imagem) {
+                    validacoes.imagem = validateImagem(imagem, 5);
+                } else {
+                    validacoes.imagem = { valid: false, message: 'Selecione uma foto do pet' };
+                }
+                
+                const valido = validateForm(validacoes);
+                if (!valido) return;
+                
                 const formData = new FormData(formCadastro);
+                
+                // Sanitiza campos de texto
+                formData.set('nome', sanitizeInput(nome));
+                formData.set('descricao', sanitizeInput(descricao));
+                formData.set('endereco_completo', sanitizeInput(endereco));
+                formData.set('email', sanitizeInput(email).toLowerCase());
+                formData.set('telefone', telefone.replace(/\D/g, ''));
+                
                 console.log('📦 Dados do formulário preparados');
                 
                 try{
@@ -967,8 +1017,8 @@
                             }
                         }catch(refreshErr){
                             console.error('❌ Erro ao renovar token:', refreshErr);
-                            alert('Sua sessão expirou. Faça login novamente.');
-                            window.location.href = '/login/';
+                            toast.error('Sua sessão expirou. Faça login novamente.');
+                            setTimeout(() => { window.location.href = '/login/'; }, 1500);
                             return;
                         }
                     }
@@ -981,14 +1031,15 @@
                     
                     const data = await res.json();
                     console.log('✅ Pet cadastrado:', data);
-                    alert('Pet cadastrado com sucesso! Aguarde a aprovação do administrador para que ele apareça na galeria.');
+                    toast.success('✅ Pet cadastrado com sucesso! Aguarde a aprovação do administrador para que ele apareça na galeria.');
                     fecharModalCadastro();
                     
                     // Recarrega a galeria (caso o pet seja aprovado automaticamente ou já tenha outros pets)
                     location.reload();
                 }catch(err){
                     console.error('💥 Erro ao cadastrar:', err);
-                    alert('Erro ao cadastrar pet: ' + err.message);
+                    const friendlyMessage = getFriendlyErrorMessage(err.message);
+                    toast.error(friendlyMessage || 'Erro ao cadastrar pet. Tente novamente.');
                 }
             });
             console.log('✅ Event listener de submit adicionado');
@@ -1061,7 +1112,7 @@
             
         } catch(error) {
             console.error('❌ Erro ao abrir modal:', error);
-            alert('Erro ao carregar dados do pet. Tente novamente.');
+            toast.error('Erro ao carregar dados do pet. Tente novamente.');
         }
     }
     
@@ -1075,8 +1126,8 @@
         const token = localStorage.getItem('access');
         
         if(!token){
-            alert('Você precisa estar logado para manifestar interesse em adotar!');
-            window.location.href = '/login/';
+            toast.error('Você precisa estar logado para manifestar interesse em adotar!');
+            setTimeout(() => { window.location.href = '/login/'; }, 1500);
             return;
         }
         
@@ -1101,21 +1152,21 @@
             if(response.status === 400){
                 const error = await response.json();
                 if(error.non_field_errors && error.non_field_errors[0].includes('já existe')){
-                    alert('Você já manifestou interesse neste pet! Aguarde a aprovação do administrador.');
+                    toast.warning('Você já manifestou interesse neste pet! Aguarde a aprovação do administrador.');
                 } else {
-                    alert('Erro ao enviar solicitação. Verifique os dados e tente novamente.');
+                    toast.error('Erro ao enviar solicitação. Verifique os dados e tente novamente.');
                 }
                 return;
             }
             
             if(!response.ok) throw new Error('Erro ao enviar solicitação');
             
-            alert(`✅ Solicitação enviada com sucesso!\n\nSua manifestação de interesse em adotar ${petNome} foi enviada para aprovação. Você receberá uma notificação quando for aprovada, com os dados de contato do doador.`);
-            fecharModalDetalhes();
+            toast.success(`✅ Solicitação enviada com sucesso!\n\nSua manifestação de interesse em adotar ${petNome} foi enviada para aprovação. Você receberá uma notificação quando for aprovada.`);
+            setTimeout(() => { fecharModalDetalhes(); }, 2000);
             
         } catch(error) {
             console.error('Erro ao manifestar interesse:', error);
-            alert('Erro ao enviar solicitação. Tente novamente.');
+            toast.error('Erro ao enviar solicitação. Tente novamente.');
         }
     }
     
@@ -1126,6 +1177,8 @@
         }
     });
     </script>
+    <script src="{% static 'toast-notifications.js' %}" defer></script>
+    <script src="{% static 'validations.js' %}" defer></script>
     <script src="{% static 'user_session.js' %}" defer></script>
 </body>
 </html>

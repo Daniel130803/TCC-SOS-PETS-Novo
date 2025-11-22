@@ -5,28 +5,42 @@ Plataforma web para adoção e reencontro de pets, conectando animais resgatados
 ## 🐾 Sobre o Projeto
 
 O S.O.S Pets é uma plataforma digital que oferece:
-- **Adoção**: Galeria de animais disponíveis para adoção com filtros avançados
-- **Pets Perdidos**: Sistema de mural com geolocalização para reportar e encontrar animais perdidos
+- **Adoção**: Galeria de animais disponíveis para adoção com filtros avançados e sistema de solicitação
+- **Pets Perdidos**: Sistema completo com geolocalização (Leaflet.js), mapa interativo com clusters, filtros por estado/cidade, e matching automático entre pets perdidos e encontrados
 - **Arrecadação**: Canal para doações financeiras e materiais
-- **Denúncia**: Formulário seguro e anônimo para reportar maus-tratos
+- **Denúncia**: Formulário seguro para reportar maus-tratos com sistema de moderação
 - **Histórias de Sucesso**: Depoimentos e casos de adoções e reencontros bem-sucedidos
+- **Painel Administrativo**: Interface para gerenciar solicitações, denúncias e conteúdo
+- **Minhas Solicitações**: Acompanhamento de pedidos de adoção enviados e recebidos
 
 ## 🚀 Tecnologias
 
 ### Backend
 - **Django 5.2.8** - Framework web
 - **Django REST Framework 3.16.1** - APIs RESTful
-- **MySQL** - Banco de dados principal
+- **MySQL 8.0** - Banco de dados principal
+- **Redis 7** - Cache e broker (preparado para Celery)
 - **SimpleJWT 5.5.1** - Autenticação JWT
 - **Pillow 12.0.0** - Processamento de imagens
+- **drf-spectacular 0.27.2** - Documentação OpenAPI/Swagger
+- **django-filter 24.3** - Filtros avançados nas APIs
+- **django-cors-headers 4.6.0** - CORS para frontend
+- **Gunicorn 23.0.0** - Servidor WSGI para produção
+- **Sentry SDK 2.18.0** - Monitoramento de erros
 - **Python 3.13**
 
 ### Frontend
-- **HTML5/CSS3** - Estrutura e estilização
-- **JavaScript (Vanilla)** - Interatividade
+- **HTML5/CSS3** - Estrutura e estilização responsiva
+- **JavaScript (Vanilla)** - Interatividade e comunicação com APIs
+- **Django Templates** - Sistema de templates integrado
 - **Font Awesome 6.5.2** - Ícones
 - **Google Fonts (Poppins, Roboto, Nunito)** - Tipografia
-- **Leaflet 1.9.4** - Mapas interativos
+- **Leaflet 1.9.4 + MarkerCluster** - Mapas interativos com agrupamento de marcadores
+- **OpenStreetMap** - Base de mapas e geocoding
+
+### DevOps
+- **Docker + Docker Compose** - Containerização
+- **GitHub Actions** - CI/CD automatizado
 
 ## 📋 Pré-requisitos
 
@@ -55,7 +69,7 @@ cd TCC-SOS-PETS-Novo
 #### 2. Configure variáveis de ambiente
 ```bash
 # Copie o arquivo de exemplo
-cp .env.example .env
+copy .env.example .env
 
 # Edite se necessário (valores padrão já funcionam)
 ```
@@ -73,9 +87,21 @@ Isso irá:
 - Subir o servidor em http://localhost:8000
 
 #### 4. Acesse a aplicação
-- Frontend: http://localhost:8000
-- API Docs (Swagger): http://localhost:8000/api/docs/
-- Admin: http://localhost:8000/admin/
+- **Frontend**: http://localhost:8000
+- **Páginas disponíveis**:
+  - Home: http://localhost:8000/
+  - Adoção: http://localhost:8000/adocao/
+  - Pets Perdidos: http://localhost:8000/animais-perdidos/
+  - Denúncias: http://localhost:8000/denuncia/
+  - Contato: http://localhost:8000/contato/
+  - Minhas Solicitações: http://localhost:8000/minhas-solicitacoes/
+  - Painel Admin (Frontend): http://localhost:8000/admin-panel/
+- **API**:
+  - API Root: http://localhost:8000/api/
+  - Swagger UI: http://localhost:8000/api/docs/
+  - ReDoc: http://localhost:8000/api/redoc/
+  - Schema JSON: http://localhost:8000/api/schema/
+- **Django Admin**: http://localhost:8000/admin/
 
 #### 5. (Opcional) Criar superusuário
 ```bash
@@ -161,6 +187,86 @@ python manage.py runserver
 
 Acesse: `http://localhost:8000`
 
+## 📁 Estrutura do Projeto
+
+```
+TCC-SOS-PETS-Novo/
+├── backend/backend/              # Backend Django
+│   ├── backend/                  # Configurações do projeto
+│   │   ├── settings.py          # Configurações principais
+│   │   ├── urls.py              # Rotas do projeto
+│   │   └── settings/            # Configurações por ambiente (dev/prod)
+│   ├── core/                    # App principal
+│   │   ├── models.py            # Modelos (Animal, PetPerdido, etc)
+│   │   ├── serializers.py       # Serializers DRF
+│   │   ├── views.py             # Views da API
+│   │   ├── urls.py              # Rotas da API
+│   │   ├── admin.py             # Configuração Django Admin
+│   │   └── management/commands/ # Comandos personalizados
+│   ├── media/                   # Upload de imagens
+│   ├── staticfiles/             # Arquivos estáticos coletados
+│   ├── requirements.txt         # Dependências Python
+│   ├── Dockerfile               # Imagem Docker do backend
+│   └── docker-entrypoint.sh     # Script de inicialização
+├── TCC_SOS_Pets/                # Frontend (templates Django)
+│   ├── index.html               # Página inicial
+│   ├── adocao.html              # Galeria de adoção
+│   ├── animais-perdidos.html    # Mapa de pets perdidos
+│   ├── animais-perdidos.js      # Lógica do mapa Leaflet
+│   ├── denuncia.html            # Formulário de denúncia
+│   ├── contato.html             # Formulário de contato
+│   ├── minhas-solicitacoes.html # Painel do usuário
+│   ├── admin-panel.html         # Painel administrativo
+│   ├── style.css                # Estilos globais
+│   ├── user_session.js          # Gerenciamento de sessão JWT
+│   └── Estetica_site/           # Assets (imagens, logos)
+├── docker-compose.yml           # Orquestração de containers
+├── .env.example                 # Exemplo de variáveis de ambiente
+├── Makefile                     # Atalhos de comandos úteis
+└── README.md                    # Este arquivo
+```
+
+## 🔌 Endpoints da API
+
+### Autenticação
+- `POST /api/auth/register/` - Registro de usuário
+- `POST /api/auth/token/` - Login (obter tokens JWT)
+- `POST /api/auth/token/refresh/` - Renovar access token
+- `GET /api/auth/me/` - Dados do usuário autenticado
+
+### Adoção
+- `GET /api/animais-adocao/` - Listar animais para adoção (com filtros)
+- `POST /api/animais-adocao/` - Cadastrar animal para adoção (autenticado)
+- `GET /api/animais-adocao/{id}/` - Detalhes do animal
+- `POST /api/solicitacoes-adocao/` - Solicitar adoção
+- `GET /api/minhas-solicitacoes-enviadas/` - Solicitações do usuário
+- `GET /api/solicitacoes-recebidas/` - Solicitações recebidas (dono do pet)
+- `GET /api/meus-pets-cadastrados/` - Pets cadastrados pelo usuário
+
+### Pets Perdidos
+- `GET /api/pets-perdidos/` - Listar pets perdidos (filtros: estado, cidade, espécie, ativo)
+- `POST /api/pets-perdidos/` - Cadastrar pet perdido (autenticado)
+- `GET /api/pets-perdidos/{id}/` - Detalhes do pet perdido
+- `POST /api/pets-encontrados/` - Reportar pet encontrado (matching automático)
+
+### Denúncias
+- `POST /api/denuncias/` - Enviar denúncia (anônimo ou autenticado)
+- `GET /api/denuncias/` - Listar denúncias (admin)
+- `PATCH /api/denuncias/{id}/` - Moderar denúncia (admin)
+
+### Contato
+- `POST /api/contatos/` - Enviar mensagem de contato
+- `GET /api/contatos/` - Listar mensagens (admin)
+
+### Notificações
+- `GET /api/notificacoes/` - Notificações do usuário autenticado
+- `PATCH /api/notificacoes/{id}/` - Marcar como lida
+
+### Documentação
+- `GET /api/schema/` - Schema OpenAPI JSON
+- `GET /api/docs/` - Swagger UI interativa
+- `GET /api/redoc/` - ReDoc (documentação alternativa)
+
 ## 🔐 Sistema de Autenticação
 ### Documentação da API (OpenAPI)
 
@@ -173,8 +279,240 @@ Acesse: `http://localhost:8000`
 
 O sistema utiliza **JWT (JSON Web Tokens)** para autenticação stateless:
 
-1. **Registro**: Usuário cria conta via `/registro/`
-2. **Login**: Sistema retorna `access` e `refresh` tokens
+1. **Registro**: Usuário cria conta via `/api/auth/register/`
+2. **Login**: Sistema retorna `access` e `refresh` tokens via `/api/auth/token/`
+3. **Uso**: Frontend armazena tokens no `localStorage` e inclui `access` token no header:
+   ```javascript
+   headers: {
+       'Authorization': `Bearer ${accessToken}`
+   }
+   ```
+4. **Renovação**: Quando `access` expira (15min), usa `refresh` token para obter novo `access`
+5. **Dados do Usuário**: Endpoint `/api/auth/me/` retorna dados do usuário autenticado
+
+### Páginas com Autenticação
+- 🔒 **Minhas Solicitações** - Requer login
+- 🔒 **Cadastrar Pet para Adoção** - Requer login
+- 🔒 **Cadastrar Pet Perdido** - Requer login
+- 🔒 **Painel Administrativo** - Requer staff/superuser
+
+## ✨ Funcionalidades Principais
+
+### 🏠 Sistema de Adoção
+- **Galeria Responsiva**: Cards com fotos, informações e filtros dinâmicos
+- **Filtros Avançados**: Espécie, porte, sexo, cidade, estado
+- **Modal de Detalhes**: Galeria de fotos, características completas
+- **Sistema de Solicitações**: Usuários podem solicitar adoção
+- **Notificações**: Alertas para donos quando recebem solicitação
+- **Painel do Usuário**: Acompanhamento de solicitações enviadas/recebidas
+
+### 🗺️ Sistema de Pets Perdidos
+- **Mapa Interativo**: Leaflet.js com OpenStreetMap
+- **Clusters de Marcadores**: Agrupa pins próximos para melhor visualização
+- **Pins Coloridos**: Vermelho (perdido) e Verde (encontrado)
+- **Zoom Inteligente**:
+  - Sem filtros: Brasil inteiro (zoom 4)
+  - Filtro de Estado: Foco no estado (zoom 7)
+  - Filtro de Cidade: Foco na cidade (zoom 12)
+- **Filtros Dinâmicos**:
+  - Estado (dropdown)
+  - Cidade (dropdown populado dinamicamente)
+  - Espécie (cachorro/gato)
+- **Mini-mapas nos Modais**: Seleção visual de localização ao cadastrar
+- **Matching Automático**: Backend compara pets perdidos com reportes de encontrados
+- **Cards Estilo Galeria**: Badges de status, recompensa, informações completas
+- **Upload Múltiplo**: Fotos principais + fotos adicionais
+- **Geolocalização**: Coordenadas lat/lng + endereço completo
+
+### 🚨 Sistema de Denúncias
+- **Formulário Seguro**: Upload de imagens/vídeos
+- **Categorias**: Maus-tratos, abandono, condições inadequadas
+- **Moderação**: Painel para admin aprovar/rejeitar
+- **Histórico**: Registro de ações da moderação
+
+### 📧 Sistema de Contato
+- **Formulário de Mensagens**: Assunto, e-mail, mensagem
+- **Painel Admin**: Visualização e marcação de lidas
+
+## 🐳 Docker
+
+### Containers
+- **db** (MySQL 8.0): Banco de dados na porta 3307
+- **redis** (Redis 7): Cache na porta 6379
+- **web** (Django): Backend na porta 8000
+
+### Comandos Docker
+```bash
+# Iniciar projeto
+docker-compose up -d
+
+# Ver logs em tempo real
+docker-compose logs -f web
+
+# Parar containers
+docker-compose down
+
+# Reconstruir após mudanças
+docker-compose up -d --build
+
+# Executar comandos Django
+docker-compose exec web python manage.py <comando>
+
+# Criar migrações
+docker-compose exec web python manage.py makemigrations
+
+# Aplicar migrações
+docker-compose exec web python manage.py migrate
+
+# Criar superusuário
+docker-compose exec web python manage.py createsuperuser
+
+# Acessar shell Python
+docker-compose exec web python manage.py shell
+
+# Acessar bash do container
+docker-compose exec web bash
+
+# Limpar tudo (cuidado: remove volumes)
+docker-compose down -v
+```
+
+## 🛠️ Comandos Úteis (Makefile)
+
+```bash
+make help              # Lista todos os comandos
+make docker-up         # Sobe containers
+make docker-down       # Para containers
+make docker-logs       # Mostra logs
+make docker-shell      # Acessa shell do container
+make migrate           # Roda migrações
+make makemigrations    # Cria migrações
+make superuser         # Cria superusuário
+make clean             # Remove arquivos temporários
+```
+
+## 🧪 Testes
+
+```bash
+# Com Docker
+docker-compose exec web python manage.py test
+
+# Sem Docker
+cd backend/backend
+python manage.py test
+
+# Testar app específico
+python manage.py test core
+
+# Com coverage
+python manage.py test --with-coverage
+```
+
+## 📊 Banco de Dados
+
+### Modelos Principais
+- **Animal**: Animais para adoção
+- **AnimalParaAdocao**: Versão completa com solicitações
+- **PetPerdido**: Pets perdidos/encontrados com geolocalização
+- **ReportePetEncontrado**: Reportes de pets encontrados
+- **SolicitacaoAdocao**: Pedidos de adoção
+- **Denuncia**: Denúncias de maus-tratos
+- **Notificacao**: Sistema de notificações
+- **Contato**: Mensagens de contato
+
+### Migrações
+```bash
+# Criar nova migração
+python manage.py makemigrations
+
+# Ver SQL da migração
+python manage.py sqlmigrate core 0001
+
+# Aplicar migrações
+python manage.py migrate
+
+# Reverter migração
+python manage.py migrate core 0001
+```
+
+## 🔒 Variáveis de Ambiente
+
+Arquivo `.env` na raiz do projeto:
+
+```env
+# Django
+DJANGO_ENV=dev
+SECRET_KEY=sua-chave-super-secreta-aqui
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1,web
+
+# Database
+DB_NAME=sos_pets
+DB_USER=sos_user
+DB_PASSWORD=senha-segura
+DB_ROOT_PASSWORD=senha-root
+
+# DRF
+PAGE_SIZE=12
+
+# CORS
+CORS_ALLOW_ALL_ORIGINS=True
+
+# JWT
+ACCESS_MINUTES=15
+REFRESH_DAYS=7
+
+# Superuser (opcional)
+DJANGO_SUPERUSER_USERNAME=admin
+DJANGO_SUPERUSER_EMAIL=admin@sospets.com
+DJANGO_SUPERUSER_PASSWORD=senha-admin
+```
+
+## 🚀 Deploy (Produção)
+
+### Preparação
+1. Configure `DJANGO_ENV=prod` no `.env`
+2. Defina `DEBUG=False`
+3. Configure `ALLOWED_HOSTS` com seu domínio
+4. Altere `SECRET_KEY` para valor seguro
+5. Configure banco de dados de produção
+6. Configure CORS com domínios específicos
+
+### Comandos de Deploy
+```bash
+# Coletar arquivos estáticos
+docker-compose exec web python manage.py collectstatic --noinput
+
+# Aplicar migrações
+docker-compose exec web python manage.py migrate
+
+# Criar superusuário
+docker-compose exec web python manage.py createsuperuser
+```
+
+## 🤝 Contribuindo
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/NovaFuncionalidade`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
+4. Push para a branch (`git push origin feature/NovaFuncionalidade`)
+5. Abra um Pull Request
+
+## 📝 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## 👥 Autores
+
+- **Daniel** - Desenvolvedor Principal - [Daniel130803](https://github.com/Daniel130803)
+
+## 📞 Suporte
+
+Para reportar bugs ou solicitar funcionalidades, abra uma [issue](https://github.com/Daniel130803/TCC-SOS-PETS-Novo/issues) no GitHub.
+
+---
+
+⭐ Desenvolvido com ❤️ para ajudar pets e suas famílias
 3. **Armazenamento**: Tokens salvos no `localStorage` do navegador
 4. **Autenticação**: Token `access` enviado no header `Authorization: Bearer <token>`
 5. **Renovação**: Token `refresh` usado para obter novo `access` quando expira

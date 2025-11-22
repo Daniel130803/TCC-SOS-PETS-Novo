@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'drf_spectacular',
     'core',
 ]
 
@@ -54,6 +55,61 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    
+    # Rate Limiting (Throttling)
+    'DEFAULT_THROTTLE_CLASSES': [
+        'core.throttling.AnonBurstRateThrottle',
+        'core.throttling.AnonSustainedRateThrottle',
+        'core.throttling.UserBurstRateThrottle',
+        'core.throttling.UserSustainedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        # Limites gerais
+        'anon_burst': '60/min',        # 60 requisições por minuto (burst)
+        'anon_sustained': '1000/hour',  # 1000 requisições por hora (sustentado)
+        'user_burst': '120/min',        # 120 requisições por minuto para logados
+        'user_sustained': '5000/hour',  # 5000 requisições por hora para logados
+        
+        # Limites para ações específicas (mais restritivos)
+        'registro': '5/hour',           # 5 registros por hora por IP
+        'login': '10/hour',             # 10 tentativas de login por hora
+        'contato': '5/hour',            # 5 mensagens de contato por hora
+        'denuncia': '10/hour',          # 10 denúncias por hora
+        'adocao': '5/hour',             # 5 solicitações de adoção por hora
+        'pet_perdido': '10/hour',       # 10 cadastros de pet perdido por hora
+        'upload': '20/hour',            # 20 uploads de arquivo por hora
+        
+        # Limites para leitura (mais permissivos)
+        'list': '100/hour',             # 100 listagens por hora
+        'detail': '200/hour',           # 200 visualizações de detalhes por hora
+    },
+}
+
+# Configuração do drf-spectacular para evitar colisões de enums
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'S.O.S Pets API',
+    'DESCRIPTION': 'API para sistema de adoção e localização de pets',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'ENUM_GENERATE_CHOICE_DESCRIPTION': False,
+    'ENUM_NAME_OVERRIDES': {
+        # Formato: 'ComponentPath': 'NomeDoEnum'
+        # Resolve colisão do campo "sexo" 
+        'AnimalSerializer.sexo': 'SexoAnimalEnum',
+        'AnimalParaAdocaoSerializer.sexo': 'SexoPetAdocaoEnum',
+        'PetPerdidoSerializer.sexo': 'SexoPetPerdidoEnum',
+        'ReportePetEncontradoSerializer.sexo': 'SexoPetEncontradoEnum',
+        # Resolve colisão do campo "porte"
+        'AnimalSerializer.porte': 'PorteAnimalEnum',
+        'AnimalParaAdocaoSerializer.porte': 'PortePetAdocaoEnum',
+        'PetPerdidoSerializer.porte': 'PortePetPerdidoEnum',
+        'ReportePetEncontradoSerializer.porte': 'PortePetEncontradoEnum',
+    },
+    'POSTPROCESSING_HOOKS': [
+        'drf_spectacular.hooks.postprocess_schema_enums',
     ],
 }
 
@@ -178,3 +234,12 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
 ]
+
+# Logging Configuration - Suprime warnings específicos de enum do drf-spectacular
+import warnings
+warnings.filterwarnings(
+    'ignore',
+    message='.*enum naming encountered a non-optimally resolvable collision.*',
+    category=UserWarning,
+    module='drf_spectacular.openapi'
+)
