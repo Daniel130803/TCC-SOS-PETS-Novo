@@ -886,7 +886,7 @@ Uma aprovação dispara **6 operações atômicas**:
 
 **Versão**: 1.0  
 **Última Atualização**: 23/11/2025  
-**Autor**: Daniel Souza  
+**Autor**: Daniel
 **Projeto**: TCC - S.O.S Pets
 
 ---
