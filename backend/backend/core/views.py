@@ -25,6 +25,7 @@ from .serializers import (
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth.models import User
+from rest_framework.generics import CreateAPIView, GenericAPIView
 
 # Create your views here.
 
@@ -120,8 +121,6 @@ class AdocaoViewSet(viewsets.ModelViewSet):
     serializer_class = AdocaoSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-from rest_framework.generics import CreateAPIView
-
 class RegisterView(CreateAPIView):
     """
     View para registro de novos usuários.
@@ -157,7 +156,7 @@ class RegisterView(CreateAPIView):
     permission_classes = [permissions.AllowAny]
     throttle_classes = [RegistroRateThrottle]
 
-class MeView(APIView):
+class MeView(GenericAPIView):
     """
     View para gerenciar dados do usuário autenticado.
     
@@ -189,6 +188,7 @@ class MeView(APIView):
         GET /api/me/
         PATCH /api/me/ {"first_name": "João Silva", "telefone": "11988888888"}
     """
+    serializer_class = UserMeSerializer
     permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request: Request) -> Response:
@@ -674,7 +674,7 @@ class SolicitacaoAdocaoViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(solicitacao)
         return Response(serializer.data)
     
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
     def cancelar(self, request: Request, pk: Optional[int] = None) -> Response:
         """Usuário cancela sua própria solicitação"""
         from django.utils import timezone
@@ -773,7 +773,7 @@ class NotificacaoViewSet(viewsets.ModelViewSet):
 
 
 # Novos ViewSets para "Minhas Solicitações"
-class MinhasSolicitacoesEnviadasView(APIView):
+class MinhasSolicitacoesEnviadasView(GenericAPIView):
     """
     View para listar solicitações de adoção enviadas pelo usuário.
     
@@ -793,6 +793,7 @@ class MinhasSolicitacoesEnviadasView(APIView):
         GET /api/minhas-solicitacoes-enviadas/?status=pendente
     """
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = SolicitacaoAdocaoSerializer
     
     def get(self, request: Request) -> Response:
         """Lista todas as solicitações de adoção enviadas pelo usuário."""
@@ -834,8 +835,6 @@ class MinhasSolicitacoesEnviadasView(APIView):
                 'doador_nome': doador.user.get_full_name() or doador.user.username,
                 'doador_telefone': None,
                 'doador_email': None,
-                'doador_endereco': None,
-                'motivo_rejeicao': None
             }
             
             # REVELAÇÃO CONDICIONAL: Dados de contato só aparecem após aprovação
@@ -851,7 +850,7 @@ class MinhasSolicitacoesEnviadasView(APIView):
         return Response({'results': data}, status=status.HTTP_200_OK)
 
 
-class SolicitacoesRecebidasView(APIView):
+class SolicitacoesRecebidasView(GenericAPIView):
     """
     View para listar solicitações de adoção recebidas nos animais do usuário.
     
@@ -873,6 +872,7 @@ class SolicitacoesRecebidasView(APIView):
         GET /api/solicitacoes-recebidas/?status=pendente
     """
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = SolicitacaoAdocaoSerializer
     
     def get(self, request: Request) -> Response:
         """Lista solicitações de adoção recebidas nos animais do doador."""
@@ -924,7 +924,7 @@ class SolicitacoesRecebidasView(APIView):
         return Response({'results': data}, status=status.HTTP_200_OK)
 
 
-class MeusPetsCadastradosView(APIView):
+class MeusPetsCadastradosView(GenericAPIView):
     """
     View para listar animais cadastrados pelo usuário para adoção.
     
@@ -946,6 +946,7 @@ class MeusPetsCadastradosView(APIView):
         GET /api/meus-pets-cadastrados/?status=aprovado
     """
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = AnimalParaAdocaoSerializer
     
     def get(self, request: Request) -> Response:
         """Lista todos os pets cadastrados pelo usuário com contadores."""
@@ -986,7 +987,7 @@ class MeusPetsCadastradosView(APIView):
                 'imagem_principal_url': request.build_absolute_uri(pet.imagem_principal.url) if pet.imagem_principal else None,
                 'data_cadastro': pet.data_cadastro,
                 'total_solicitacoes': total_solicitacoes,
-                'solicitacoes_pendentes': solicitacoes_pendentes
+                'solicitacoes_pendentes': solicitacoes_pendentes,
             }
             
             data.append(item)
