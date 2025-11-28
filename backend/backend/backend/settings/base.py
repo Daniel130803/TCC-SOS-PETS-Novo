@@ -52,6 +52,7 @@ REST_FRAMEWORK = {
         'user_burst': '60/minute',
         'user_sustained': '500/hour',
         'registro': '5/hour',
+        'pet_perdido': '10/hour',  # Adicionado para corrigir o erro
     },
 }
 
