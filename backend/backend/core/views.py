@@ -120,7 +120,9 @@ class AdocaoViewSet(viewsets.ModelViewSet):
     serializer_class = AdocaoSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class RegisterView(APIView):
+from rest_framework.generics import CreateAPIView
+
+class RegisterView(CreateAPIView):
     """
     View para registro de novos usuários.
     
@@ -151,16 +153,9 @@ class RegisterView(APIView):
             "telefone": "11999999999"
         }
     """
+    serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
     throttle_classes = [RegistroRateThrottle]
-    
-    def post(self, request: Request) -> Response:
-        """Registra novo usuário no sistema."""
-        s = RegisterSerializer(data=request.data)
-        if s.is_valid():
-            s.save()
-            return Response({'detail': 'Usuário criado com sucesso.'}, status=status.HTTP_201_CREATED)
-        return Response(s.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class MeView(APIView):
     """

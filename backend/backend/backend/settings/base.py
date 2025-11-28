@@ -46,6 +46,13 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
         'rest_framework.filters.SearchFilter',
     ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon_burst': '20/minute',
+        'anon_sustained': '100/hour',
+        'user_burst': '60/minute',
+        'user_sustained': '500/hour',
+        'registro': '5/hour',
+    },
 }
 
 SPECTACULAR_SETTINGS = {
