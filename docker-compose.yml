@@ -99,6 +99,24 @@ services:
     networks:
       - sospets_network
 
+  # Frontend React (desenvolvimento)
+  frontend:
+    build:
+      context: ./frontend
+    container_name: sospets_frontend
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      # habilita polling para watchers em volumes compartilhados no Windows
+      CHOKIDAR_USEPOLLING: "true"
+    command: npm start
+    networks:
+      - sospets_network
+
   # Celery Worker (para tarefas assíncronas - futuro)
   # celery:
   #   build:
