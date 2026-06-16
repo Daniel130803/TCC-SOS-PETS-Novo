@@ -53,7 +53,10 @@ REST_FRAMEWORK = {
         'user_sustained': '500/hour',
         'registro': '5/hour',
         'pet_perdido': '10/hour',
-        'contato': '5/hour',  # Adicionado para corrigir erro 500
+        'contato': '5/hour',
+        'denuncia': '10/hour',  # 10 denúncias por hora por IP
+        'adocao': '5/hour',  # 5 solicitações de adoção por hora por IP
+        'upload': '20/hour',  # 20 uploads de arquivos por hora por IP
     },
 }
 
