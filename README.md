@@ -87,17 +87,21 @@ Isso irá:
 - Subir o servidor em http://localhost:8000
 
 #### 4. Acesse a aplicação
-- **Frontend**: http://localhost:8000
-- **Páginas disponíveis**:
-  - Home: http://localhost:8000/
-  - Adoção: http://localhost:8000/adocao/
-  - Pets Perdidos: http://localhost:8000/animais-perdidos/
-  - Denúncias: http://localhost:8000/denuncia/
-  - Contato: http://localhost:8000/contato/
-  - Minhas Solicitações: http://localhost:8000/minhas-solicitacoes/
-  - Painel Admin (Frontend): http://localhost:8000/admin-panel/
-- **API**:
-  - API Root: http://localhost:8000/api/
+
+**Frontend (HTML/CSS/JS Estático - Ativo no momento)**:
+- Home: http://localhost:8000/
+- Adoção: http://localhost:8000/adocao/
+- Pets Perdidos: http://localhost:8000/animais-perdidos/
+- Denúncias: http://localhost:8000/denuncia/
+- Contato: http://localhost:8000/contato/
+- Minhas Solicitações: http://localhost:8000/minhas-solicitacoes/
+- Painel Admin (Frontend): http://localhost:8000/admin-panel/
+
+**API**:
+- API Root: http://localhost:8000/api/
+- Swagger/Docs: http://localhost:8000/api/docs/
+
+**Nota sobre React**: O frontend React está desativado no momento. Para reativar quando estiver pronto, veja [REACT_SETUP.md](REACT_SETUP.md).
   - Swagger UI: http://localhost:8000/api/docs/
   - ReDoc: http://localhost:8000/api/redoc/
   - Schema JSON: http://localhost:8000/api/schema/
